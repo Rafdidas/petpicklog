@@ -7,10 +7,14 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type SavedProductRow = {
   id: string;
+  external_product_id: string | null;
   saved_price: number | null;
   status: string;
   created_at: string;
   external_products: {
+    id: string;
+    source: string;
+    external_id: string;
     title: string;
     image_url: string | null;
     product_url: string;
@@ -19,6 +23,19 @@ type SavedProductRow = {
     category: string | null;
     last_synced_at: string;
   } | null;
+};
+
+type SearchProduct = {
+  externalId: string;
+  title: string;
+  brand: string | null;
+  category: string;
+  imageUrl: string;
+  productUrl: string;
+  mallName: string;
+  latestPrice: number;
+  source: "NAVER" | "DEMO";
+  lastSyncedAt: string;
 };
 
 const statusOptions = [
@@ -59,6 +76,10 @@ export default function SavedProductsClient() {
   const [message, setMessage] = useState("불러오는 중입니다.");
   const [notice, setNotice] = useState("");
   const [pendingId, setPendingId] = useState("");
+  const [reviewingId, setReviewingId] = useState("");
+  const [reviewContent, setReviewContent] = useState("");
+  const [reviewRating, setReviewRating] = useState("5");
+  const [repurchaseIntent, setRepurchaseIntent] = useState("true");
 
   useEffect(() => {
     async function loadSavedProducts() {
@@ -79,7 +100,7 @@ export default function SavedProductsClient() {
       const { data, error } = await supabase
         .from("saved_products")
         .select(
-          "id, saved_price, status, created_at, external_products(title, image_url, product_url, mall_name, latest_price, category, last_synced_at)"
+          "id, external_product_id, saved_price, status, created_at, external_products(id, source, external_id, title, image_url, product_url, mall_name, latest_price, category, last_synced_at)"
         )
         .order("created_at", { ascending: false });
 
@@ -112,6 +133,149 @@ export default function SavedProductsClient() {
     if (error) {
       setItems(previousItems);
       setNotice(error.message);
+    }
+
+    setPendingId("");
+  }
+
+  async function handleRefreshPrice(item: SavedProductRow) {
+    const product = item.external_products;
+    if (!supabase || !product) {
+      setNotice("가격을 확인할 상품 정보가 없습니다.");
+      return;
+    }
+
+    setPendingId(item.id);
+    setNotice("");
+
+    try {
+      const response = await fetch(`/api/products/search?query=${encodeURIComponent(product.title)}`);
+      const data = (await response.json()) as { products?: SearchProduct[]; error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error ?? "가격 재조회에 실패했습니다.");
+      }
+
+      const candidates = data.products ?? [];
+      const lowest = candidates.reduce<SearchProduct | null>((currentLowest, candidate) => {
+        if (!candidate.latestPrice) {
+          return currentLowest;
+        }
+
+        if (!currentLowest || candidate.latestPrice < currentLowest.latestPrice) {
+          return candidate;
+        }
+
+        return currentLowest;
+      }, null);
+
+      if (!lowest) {
+        throw new Error("새 가격 후보를 찾지 못했습니다.");
+      }
+
+      const checkedAt = new Date().toISOString();
+      const { error: updateError } = await supabase
+        .from("external_products")
+        .update({
+          title: lowest.title,
+          brand: lowest.brand,
+          category: lowest.category,
+          image_url: lowest.imageUrl,
+          product_url: lowest.productUrl,
+          mall_name: lowest.mallName,
+          latest_price: lowest.latestPrice,
+          raw_data: lowest,
+          last_synced_at: checkedAt
+        })
+        .eq("id", product.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      await supabase.from("price_histories").insert({
+        external_product_id: product.id,
+        source: lowest.source,
+        mall_name: lowest.mallName,
+        price: lowest.latestPrice,
+        product_url: lowest.productUrl,
+        checked_at: checkedAt
+      });
+
+      setItems((currentItems) =>
+        currentItems.map((currentItem) =>
+          currentItem.id === item.id
+            ? {
+                ...currentItem,
+                external_products: {
+                  ...product,
+                  title: lowest.title,
+                  source: lowest.source,
+                  external_id: lowest.externalId,
+                  image_url: lowest.imageUrl,
+                  product_url: lowest.productUrl,
+                  mall_name: lowest.mallName,
+                  latest_price: lowest.latestPrice,
+                  category: lowest.category,
+                  last_synced_at: checkedAt
+                }
+              }
+            : currentItem
+        )
+      );
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "가격 재조회에 실패했습니다.");
+    } finally {
+      setPendingId("");
+    }
+  }
+
+  function openReviewForm(savedProductId: string) {
+    setReviewingId(savedProductId);
+    setReviewContent("");
+    setReviewRating("5");
+    setRepurchaseIntent("true");
+    setNotice("");
+  }
+
+  async function handleSubmitReview(item: SavedProductRow) {
+    if (!supabase) {
+      setNotice("Supabase 환경 변수를 확인해주세요.");
+      return;
+    }
+
+    if (!reviewContent.trim()) {
+      setNotice("후기 내용을 입력해주세요.");
+      return;
+    }
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setNotice("로그인 후 후기를 작성할 수 있습니다.");
+      return;
+    }
+
+    setPendingId(item.id);
+    setNotice("");
+
+    const { error } = await supabase.from("product_reviews").insert({
+      user_id: user.id,
+      external_product_id: item.external_product_id,
+      rating: Number(reviewRating),
+      repurchase_intent: repurchaseIntent === "true",
+      review_type: "ITEM",
+      content: reviewContent.trim()
+    });
+
+    if (error) {
+      setNotice(error.message);
+    } else {
+      setReviewingId("");
+      setReviewContent("");
+      setNotice("후기를 저장했습니다.");
     }
 
     setPendingId("");
@@ -206,13 +370,58 @@ export default function SavedProductsClient() {
                 </label>
               </div>
               <div className="saved-item__actions">
+                <button className="button button--ghost" type="button" onClick={() => handleRefreshPrice(item)} disabled={pendingId === item.id}>
+                  {pendingId === item.id ? "확인 중" : "현재 가격 확인"}
+                </button>
                 <a className="button button--secondary" href={product.product_url} target="_blank" rel="noreferrer">
                   구매 링크
                 </a>
+                <button className="button button--secondary" type="button" onClick={() => openReviewForm(item.id)}>
+                  후기 작성
+                </button>
                 <button className="button button--danger" type="button" onClick={() => handleDelete(item.id)} disabled={pendingId === item.id}>
                   찜 취소
                 </button>
               </div>
+              {reviewingId === item.id ? (
+                <form
+                  className="review-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    handleSubmitReview(item);
+                  }}
+                >
+                  <label>
+                    별점
+                    <select value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>
+                      <option value="5">5점</option>
+                      <option value="4">4점</option>
+                      <option value="3">3점</option>
+                      <option value="2">2점</option>
+                      <option value="1">1점</option>
+                    </select>
+                  </label>
+                  <label>
+                    재구매 의사
+                    <select value={repurchaseIntent} onChange={(event) => setRepurchaseIntent(event.target.value)}>
+                      <option value="true">있음</option>
+                      <option value="false">없음</option>
+                    </select>
+                  </label>
+                  <label className="review-form__content">
+                    후기
+                    <textarea value={reviewContent} onChange={(event) => setReviewContent(event.target.value)} rows={4} placeholder="써보니 어땠나요?" />
+                  </label>
+                  <div className="review-form__actions">
+                    <button className="button button--primary" type="submit" disabled={pendingId === item.id}>
+                      저장
+                    </button>
+                    <button className="button button--secondary" type="button" onClick={() => setReviewingId("")}>
+                      취소
+                    </button>
+                  </div>
+                </form>
+              ) : null}
             </article>
           );
         })}
