@@ -1,30 +1,45 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useCallback, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { demoProducts } from "@/lib/demo";
+import { formatCheckedAt, formatPrice } from "@/lib/format";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { ExternalProduct } from "@/types/product";
 
-const formatPrice = (price: number) => new Intl.NumberFormat("ko-KR").format(price);
+const getSourceLabel = (source: ExternalProduct["source"]) => (source === "NAVER" ? "네이버 쇼핑 기준" : source);
+const recommendedQueries = ["강아지 사료", "고양이 모래", "배변패드", "강아지 샴푸", "고양이 간식", "영양제"];
 
-export default function ProductSearchClient() {
+export default function ProductSearchClient({
+  initialError,
+  initialProducts,
+  initialQuery
+}: {
+  initialError: string;
+  initialProducts: ExternalProduct[];
+  initialQuery: string;
+}) {
   const router = useRouter();
-  const [query, setQuery] = useState("사료");
-  const [products, setProducts] = useState<ExternalProduct[]>(demoProducts);
+  const [query, setQuery] = useState(initialQuery);
+  const [products, setProducts] = useState<ExternalProduct[]>(initialProducts);
   const [isLoading, setIsLoading] = useState(false);
   const [savingId, setSavingId] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(initialError);
   const [successMessage, setSuccessMessage] = useState("");
 
-  async function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const searchProducts = useCallback(async (nextQuery: string) => {
+    if (!nextQuery.trim()) {
+      setErrorMessage("검색어를 입력해주세요.");
+      return;
+    }
+
     setIsLoading(true);
     setErrorMessage("");
+    setSuccessMessage("");
 
     try {
-      const response = await fetch(`/api/products/search?query=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/products/search?query=${encodeURIComponent(nextQuery)}`);
       const data = (await response.json()) as { products?: ExternalProduct[]; error?: string };
 
       if (!response.ok) {
@@ -32,11 +47,19 @@ export default function ProductSearchClient() {
       }
 
       setProducts(data.products ?? []);
+      if (!data.products?.length) {
+        setErrorMessage("검색 결과가 없습니다. 다른 검색어로 다시 시도해주세요.");
+      }
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "검색에 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    searchProducts(query);
   }
 
   async function handleSave(product: ExternalProduct) {
@@ -57,6 +80,7 @@ export default function ProductSearchClient() {
 
     if (!user) {
       router.push("/auth?redirect=/products");
+      setSavingId("");
       return;
     }
 
@@ -152,7 +176,8 @@ export default function ProductSearchClient() {
     <main className="products-page">
       <section className="page-heading">
         <p className="section-label">상품 검색</p>
-        <h1>쇼핑몰 상품 후보를 검색하고 저장할 대상을 고릅니다.</h1>
+        <h1>반려동물 용품의 현재 확인 가격을 검색합니다.</h1>
+        <p className="page-heading__copy">네이버 쇼핑 API 검색 결과만 표시합니다. 최종 가격과 옵션은 쇼핑몰에서 확인해야 합니다.</p>
       </section>
 
       <form className="search-bar" onSubmit={handleSearch}>
@@ -163,24 +188,44 @@ export default function ProductSearchClient() {
         </button>
       </form>
 
+      <section className="quick-links" aria-label="추천 검색어">
+        {recommendedQueries.map((item) => (
+          <button className="quick-links__item" type="button" key={item} onClick={() => setQuery(item)}>
+            {item}
+          </button>
+        ))}
+      </section>
+
       {errorMessage ? <p className="notice notice--error">{errorMessage}</p> : null}
       {successMessage ? <p className="notice notice--success">{successMessage}</p> : null}
+      {!query.trim() && !products.length ? (
+        <div className="empty-state">
+          <p>검색어를 입력해 반려동물 용품 가격을 확인해보세요.</p>
+        </div>
+      ) : null}
 
       <section className="product-grid" aria-live="polite">
         {products.map((product) => (
           <article className="product-card" key={`${product.source}-${product.externalId}`}>
             <Image src={product.imageUrl} alt="" width={600} height={450} />
             <div className="product-card--body">
-              <span>{product.mallName}</span>
+              <div className="product-card--meta">
+                <span>{product.mallName}</span>
+                <em>{getSourceLabel(product.source)}</em>
+              </div>
               <h2>{product.title}</h2>
-              <p>{formatPrice(product.latestPrice)}원</p>
+              <p>{formatPrice(product.latestPrice)}</p>
               <small>{product.category || "카테고리 확인 필요"}</small>
+              <small>마지막 확인: {formatCheckedAt(product.lastSyncedAt)}</small>
               <div className="product-card--actions">
                 <button className="button button--secondary" type="button" onClick={() => handleSave(product)} disabled={savingId === product.externalId}>
                   {savingId === product.externalId ? "저장 중" : "찜하기"}
                 </button>
+                <Link className="button button--ghost" href={`/products?query=${encodeURIComponent(product.title)}`}>
+                  가격 확인
+                </Link>
                 <a className="button button--ghost" href={product.productUrl} target="_blank" rel="noreferrer">
-                  구매 링크
+                  구매하러 가기
                 </a>
               </div>
             </div>

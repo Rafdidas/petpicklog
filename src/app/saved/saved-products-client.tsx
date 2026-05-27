@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { formatCheckedAt, formatPrice } from "@/lib/format";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 
 type SavedProductRow = {
@@ -34,7 +35,7 @@ type SearchProduct = {
   productUrl: string;
   mallName: string;
   latestPrice: number;
-  source: "NAVER" | "DEMO";
+  source: "NAVER";
   lastSyncedAt: string;
 };
 
@@ -46,11 +47,21 @@ const statusOptions = [
   { value: "REPURCHASE", label: "다시 살 예정" }
 ];
 
-const formatPrice = (price: number | null) => (price ? `${new Intl.NumberFormat("ko-KR").format(price)}원` : "가격 확인 필요");
+const getSourceLabel = (source: string) => (source === "NAVER" ? "네이버 쇼핑 기준" : "출처 확인 필요");
+const getDiffLabel = (priceDiff: number | null) => {
+  if (priceDiff === null) {
+    return "";
+  }
 
-const formatSignedPrice = (price: number) => {
-  const prefix = price > 0 ? "+" : "";
-  return `${prefix}${new Intl.NumberFormat("ko-KR").format(price)}원`;
+  if (priceDiff < 0) {
+    return `${formatPrice(Math.abs(priceDiff))} 하락`;
+  }
+
+  if (priceDiff > 0) {
+    return `${formatPrice(priceDiff)} 상승`;
+  }
+
+  return "가격 변동 없음";
 };
 
 function normalizeSavedRows(rows: unknown): SavedProductRow[] {
@@ -311,12 +322,58 @@ export default function SavedProductsClient() {
     setPendingId("");
   }
 
+  const summary = items.reduce(
+    (acc, item) => {
+      const product = item.external_products;
+      const currentPrice = product?.latest_price;
+      const savedPrice = item.saved_price;
+      const checkedAt = product?.last_synced_at ? new Date(product.last_synced_at).getTime() : 0;
+
+      if (currentPrice !== null && currentPrice !== undefined && savedPrice !== null) {
+        if (currentPrice < savedPrice) {
+          acc.down += 1;
+        } else if (currentPrice > savedPrice) {
+          acc.up += 1;
+        }
+      }
+
+      if (checkedAt > acc.latestCheckedAt) {
+        acc.latestCheckedAt = checkedAt;
+      }
+
+      return acc;
+    },
+    { down: 0, up: 0, latestCheckedAt: 0 }
+  );
+
   return (
     <main className="saved-page">
       <section className="page-heading">
-        <p className="section-label">찜 목록</p>
-        <h1>저장한 상품의 현재 가격과 구매 링크를 확인합니다.</h1>
+        <p className="section-label">저장한 상품</p>
+        <h1>관심 상품의 가격 변화를 확인하세요.</h1>
+        <p className="page-heading__copy">가격은 마지막 확인 시각 기준입니다. 최종 결제가는 쇼핑몰에서 다시 확인해주세요.</p>
       </section>
+
+      {!message ? (
+        <section className="metric-grid" aria-label="저장 상품 가격 요약">
+          <article>
+            <span>저장한 상품</span>
+            <strong>{items.length}개</strong>
+          </article>
+          <article>
+            <span>가격 하락</span>
+            <strong>{summary.down}개</strong>
+          </article>
+          <article>
+            <span>가격 상승</span>
+            <strong>{summary.up}개</strong>
+          </article>
+          <article>
+            <span>최근 확인</span>
+            <strong>{summary.latestCheckedAt ? formatCheckedAt(new Date(summary.latestCheckedAt).toISOString()) : "확인 전"}</strong>
+          </article>
+        </section>
+      ) : null}
 
       {message ? (
         <div className="empty-state">
@@ -342,16 +399,17 @@ export default function SavedProductsClient() {
             <article className="saved-item" key={item.id}>
               {product.image_url ? <Image src={product.image_url} alt="" width={180} height={135} /> : <div className="saved-item__image" />}
               <div className="saved-item__content">
-                <span>{product.mall_name ?? "쇼핑몰 확인 필요"}</span>
+                <span>{product.mall_name ?? "쇼핑몰 확인 필요"} · {getSourceLabel(product.source)}</span>
                 <h2>{product.title}</h2>
                 <p>현재 {formatPrice(product.latest_price)}</p>
                 <div className="saved-item__meta">
                   <small>저장 당시 {formatPrice(item.saved_price)}</small>
                   {priceDiff !== null ? (
                     <strong className={priceDiff <= 0 ? "saved-item__diff saved-item__diff--down" : "saved-item__diff saved-item__diff--up"}>
-                      {priceDiff === 0 ? "변동 없음" : formatSignedPrice(priceDiff)}
+                      {getDiffLabel(priceDiff)}
                     </strong>
                   ) : null}
+                  <small>마지막 확인 {formatCheckedAt(product.last_synced_at)}</small>
                 </div>
                 <label className="saved-item__status" htmlFor={`status-${item.id}`}>
                   상태
@@ -373,8 +431,11 @@ export default function SavedProductsClient() {
                 <button className="button button--ghost" type="button" onClick={() => handleRefreshPrice(item)} disabled={pendingId === item.id}>
                   {pendingId === item.id ? "확인 중" : "현재 가격 확인"}
                 </button>
+                <Link className="button button--secondary" href={`/products/${product.id}`}>
+                  상세 보기
+                </Link>
                 <a className="button button--secondary" href={product.product_url} target="_blank" rel="noreferrer">
-                  구매 링크
+                  구매하러 가기
                 </a>
                 <button className="button button--secondary" type="button" onClick={() => openReviewForm(item.id)}>
                   후기 작성

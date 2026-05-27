@@ -54,8 +54,8 @@ export default function Header() {
         </Link>
         <nav className="header--inner__nav" aria-label="주요 메뉴">
           <Link href="/products">용품 검색</Link>
-          {user ? <Link href="/saved">찜 목록</Link> : null}
-          <Link href="/hospitals">동물병원</Link>
+          {user ? <Link href="/saved">저장한 상품</Link> : null}
+          <Link href="/hospitals">동물병원 찾기</Link>
           {isReady && user ? (
             <button className="header--inner__nav-button" type="button" onClick={handleSignOut}>
               로그아웃

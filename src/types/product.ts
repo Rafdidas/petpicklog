@@ -7,7 +7,7 @@ export type ExternalProduct = {
   productUrl: string;
   mallName: string;
   latestPrice: number;
-  source: "NAVER" | "DEMO";
+  source: "NAVER";
   lastSyncedAt: string;
 };
 

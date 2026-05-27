@@ -1,91 +1,125 @@
 import Link from "next/link";
-import Image from "next/image";
-import { demoHospitals, demoProducts } from "@/lib/demo";
 
-const formatPrice = (price: number) => new Intl.NumberFormat("ko-KR").format(price);
+const recommendedQueries = ["강아지 사료", "고양이 모래", "배변패드", "강아지 샴푸", "고양이 간식", "관절 영양제"];
+
+const shortcutCategories = [
+  { label: "사료", query: "반려동물 사료" },
+  { label: "간식", query: "반려동물 간식" },
+  { label: "배변패드", query: "배변패드" },
+  { label: "고양이 모래", query: "고양이 모래" },
+  { label: "영양제", query: "반려동물 영양제" },
+  { label: "샴푸", query: "강아지 샴푸" },
+  { label: "장난감", query: "반려동물 장난감" },
+  { label: "이동장", query: "반려동물 이동장" }
+];
+
+const todaySearches = [
+  { label: "강아지 사료 인기상품 보기", query: "강아지 사료 인기상품" },
+  { label: "고양이 모래 가격 보기", query: "고양이 모래" },
+  { label: "배변패드 가격 보기", query: "배변패드" },
+  { label: "관절 영양제 비교하기", query: "강아지 관절 영양제" }
+];
 
 export default function HomePage() {
-  const lowestProduct = demoProducts.reduce((lowest, product) => (product.latestPrice < lowest.latestPrice ? product : lowest));
-
   return (
     <main className="home">
-      <section className="home--hero">
-        <div className="home--hero__content">
-          <p className="home--hero__eyebrow">가격 비교부터 동네 정보까지</p>
-          <h1>우리 애 용품, 다시 찾기 쉽게 저장하고 비교하세요.</h1>
-          <p className="home--hero__copy">
-            쇼핑 API 기반 상품 검색, 찜한 상품 가격 기록, 공공데이터 기반 동물병원 목록을 MVP 범위로 시작합니다.
-          </p>
-          <div className="home--hero__actions">
-            <Link className="button button--primary" href="/products">
-              용품 검색하기
-            </Link>
-            <Link className="button button--secondary" href="/hospitals">
-              동물병원 찾기
-            </Link>
+      <section className="dashboard-hero dashboard-hero--search">
+        <div className="dashboard-hero__content">
+          <p className="section-label">용품 가격 검색</p>
+          <h1>반려동물 용품 가격을 비교해보세요.</h1>
+          <p>사료, 간식, 배변패드, 고양이 모래처럼 자주 사는 용품을 검색하고 관심 상품으로 저장해 가격 변화를 확인합니다.</p>
+          <form className="dashboard-search" action="/products">
+            <label htmlFor="dashboard-query">검색어</label>
+            <input id="dashboard-query" name="query" placeholder="예: 강아지 사료, 고양이 모래" />
+            <button className="button button--primary" type="submit">
+              검색
+            </button>
+          </form>
+          <div className="quick-links" aria-label="추천 검색어">
+            {recommendedQueries.map((query) => (
+              <Link className="quick-links__item" href={`/products?query=${encodeURIComponent(query)}`} key={query}>
+                {query}
+              </Link>
+            ))}
           </div>
         </div>
-        <div className="home--hero__panel" aria-label="오늘의 가격 확인 예시">
-          <span>최근 확인 상품</span>
-          <strong>{lowestProduct.title}</strong>
-          <p>{formatPrice(lowestProduct.latestPrice)}원</p>
-          <small>최종 가격은 쇼핑몰에서 확인해주세요.</small>
-        </div>
       </section>
 
-      <section className="home--summary" aria-label="MVP 핵심 기능">
-        <article>
-          <span>01</span>
-          <h2>외부 검색 결과 분리</h2>
-          <p>검색 API 결과는 `external_products` 후보로 다루고, 내부 정제 상품과 섞지 않습니다.</p>
-        </article>
-        <article>
-          <span>02</span>
-          <h2>찜 기반 가격 기록</h2>
-          <p>처음부터 모든 상품을 추적하지 않고 사용자가 저장한 상품부터 가격 변화를 쌓습니다.</p>
-        </article>
-        <article>
-          <span>03</span>
-          <h2>공공정보로 초기 콘텐츠 확보</h2>
-          <p>지도 SDK 없이도 주소와 외부 지도 링크 중심의 동물병원 목록을 먼저 제공합니다.</p>
-        </article>
-      </section>
-
-      <section className="home--preview">
-        <div>
-          <p className="section-label">상품 후보</p>
-          <h2>데모 데이터가 있어 API 키 없이도 화면을 확인할 수 있습니다.</h2>
+      <section className="dashboard-section">
+        <div className="dashboard-section__heading">
+          <div>
+            <p className="section-label">많이 찾는 용품 바로가기</p>
+            <h2>자주 구매하는 카테고리부터 확인하세요.</h2>
+          </div>
         </div>
-        <div className="product-grid">
-          {demoProducts.slice(0, 2).map((product) => (
-            <article className="product-card" key={product.externalId}>
-              <Image src={product.imageUrl} alt="" width={600} height={450} />
-              <div className="product-card--body">
-                <span>{product.mallName}</span>
-                <h3>{product.title}</h3>
-                <p>{formatPrice(product.latestPrice)}원</p>
-              </div>
-            </article>
+        <div className="category-grid">
+          {shortcutCategories.map((category) => (
+            <Link className="category-card" href={`/products?query=${encodeURIComponent(category.query)}`} key={category.label}>
+              <span>{category.label}</span>
+              <strong>가격 검색하기</strong>
+            </Link>
           ))}
         </div>
       </section>
 
-      <section className="home--preview">
-        <div>
-          <p className="section-label">동물병원</p>
-          <h2>지역 기반 공공데이터 화면의 첫 형태입니다.</h2>
+      <section className="dashboard-section">
+        <div className="dashboard-section__heading">
+          <div>
+            <p className="section-label">오늘 확인해볼 상품/검색어</p>
+            <h2>처음 확인하기 좋은 검색 흐름입니다.</h2>
+          </div>
         </div>
-        <div className="hospital-list">
-          {demoHospitals.slice(0, 2).map((hospital) => (
-            <article className="hospital-item" key={hospital.id}>
-              <div>
-                <strong>{hospital.name}</strong>
-                <p>{hospital.roadAddress}</p>
-              </div>
-              <span>{hospital.status}</span>
-            </article>
+        <div className="action-list">
+          {todaySearches.map((item) => (
+            <Link className="action-item" href={`/products?query=${encodeURIComponent(item.query)}`} key={item.label}>
+              <span>{item.label}</span>
+              <strong>바로 보기</strong>
+            </Link>
           ))}
         </div>
+      </section>
+
+      <section className="dashboard-band">
+        <article>
+          <p className="section-label">내 관심상품 가격 변화</p>
+          <h2>저장한 상품이 생기면 가격 변화를 여기서 이어서 확인합니다.</h2>
+          <p>아직 저장 상품이 없다면 먼저 상품을 검색해 관심 상품으로 저장해보세요.</p>
+          <Link className="button button--primary" href="/products">
+            관심상품 찾기
+          </Link>
+        </article>
+        <article>
+          <p className="section-label">최근 확인 상품</p>
+          <h2>최근 검색하거나 저장한 상품 기록을 쌓아갈 예정입니다.</h2>
+          <p>상품을 저장하면 저장 당시 가격과 마지막 확인 시각을 기준으로 가격 흐름을 볼 수 있습니다.</p>
+          <Link className="button button--secondary" href="/saved">
+            저장한 상품 보기
+          </Link>
+        </article>
+      </section>
+
+      <section className="dashboard-section">
+        <div className="dashboard-section__heading">
+          <div>
+            <p className="section-label">반려생활 정보</p>
+            <h2>가격 확인과 함께 필요한 생활 정보를 연결합니다.</h2>
+          </div>
+        </div>
+        <div className="info-grid">
+          <Link className="info-card" href="/hospitals">
+            <span>동물병원 찾기</span>
+            <strong>지역, 병원명, 주소로 공공데이터 기반 동물병원 정보를 검색합니다.</strong>
+          </Link>
+          <article className="info-card">
+            <span>공공데이터 안내</span>
+            <strong>방문 전 운영 여부와 진료 가능 여부는 병원에 직접 확인해주세요.</strong>
+          </article>
+        </div>
+      </section>
+
+      <section className="source-note">
+        <h2>가격 정보 안내</h2>
+        <p>상품 가격은 네이버 쇼핑 API 검색 결과를 기준으로 표시됩니다. 최종 가격, 배송비, 재고 여부는 쇼핑몰에서 확인해주세요.</p>
       </section>
     </main>
   );

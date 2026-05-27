@@ -1,4 +1,3 @@
-import { demoProducts } from "@/lib/demo";
 import type { ExternalProduct } from "@/types/product";
 
 type NaverShoppingItem = {
@@ -26,12 +25,11 @@ export async function searchShoppingProducts(query: string): Promise<ExternalPro
   const clientSecret = process.env.NAVER_SHOPPING_CLIENT_SECRET;
 
   if (!query.trim()) {
-    return demoProducts;
+    return [];
   }
 
   if (!clientId || !clientSecret) {
-    const lowerQuery = query.toLowerCase();
-    return demoProducts.filter((product) => product.title.toLowerCase().includes(lowerQuery) || product.category.includes(query));
+    throw new Error("Naver shopping API credentials are not configured.");
   }
 
   const response = await fetch(
