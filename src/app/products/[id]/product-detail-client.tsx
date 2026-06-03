@@ -31,6 +31,7 @@ type PriceHistoryRow = {
 
 type ReviewRow = {
   id: string;
+  user_id: string;
   rating: number;
   repurchase_intent: boolean | null;
   content: string;
@@ -50,6 +51,9 @@ export default function ProductDetailClient({ productId }: { productId: string }
   const [reviewRating, setReviewRating] = useState("5");
   const [repurchaseIntent, setRepurchaseIntent] = useState("true");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState("");
 
   useEffect(() => {
     async function loadProductDetail() {
@@ -74,7 +78,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
         return;
       }
 
-      const [{ data: historyData }, { data: reviewData }] = await Promise.all([
+      const [{ data: historyData }, { data: reviewData }, { data: authData }] = await Promise.all([
         supabase
           .from("price_histories")
           .select("id, source, mall_name, price, product_url, checked_at")
@@ -83,14 +87,26 @@ export default function ProductDetailClient({ productId }: { productId: string }
           .limit(20),
         supabase
           .from("product_reviews")
-          .select("id, rating, repurchase_intent, content, created_at")
+          .select("id, user_id, rating, repurchase_intent, content, created_at")
           .eq("external_product_id", productId)
-          .order("created_at", { ascending: false })
+          .order("created_at", { ascending: false }),
+        supabase.auth.getUser()
       ]);
 
       setProduct(productData as ExternalProductRow);
       setHistories((historyData ?? []) as PriceHistoryRow[]);
       setReviews((reviewData ?? []) as ReviewRow[]);
+      const userId = authData.user?.id ?? "";
+      setCurrentUserId(userId);
+      if (userId) {
+        const { data: savedData } = await supabase
+          .from("saved_products")
+          .select("id")
+          .eq("user_id", userId)
+          .eq("external_product_id", productId)
+          .maybeSingle();
+        setIsSaved(Boolean(savedData));
+      }
       setMessage("");
     }
 
@@ -132,7 +148,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
         review_type: "ITEM",
         content: reviewContent.trim()
       })
-      .select("id, rating, repurchase_intent, content, created_at")
+      .select("id, user_id, rating, repurchase_intent, content, created_at")
       .single();
 
     setIsSubmitting(false);
@@ -147,6 +163,39 @@ export default function ProductDetailClient({ productId }: { productId: string }
     setNotice("후기를 저장했습니다.");
   }
 
+  async function handleSaveProduct() {
+    if (!supabase || !product) {
+      return;
+    }
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setNotice("로그인 후 관심상품으로 저장할 수 있습니다.");
+      return;
+    }
+
+    setIsSaving(true);
+    setNotice("");
+    const { error } = await supabase.from("saved_products").insert({
+      user_id: user.id,
+      external_product_id: product.id,
+      status: "WISHLIST",
+      saved_price: product.latest_price
+    });
+    setIsSaving(false);
+
+    if (error) {
+      setNotice(error.code === "23505" ? "이미 관심상품으로 저장한 상품입니다." : error.message);
+      return;
+    }
+
+    setIsSaved(true);
+    setNotice("관심상품으로 저장했습니다.");
+  }
+
   const averageRating = reviews.length ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
   const repurchaseReviews = reviews.filter((review) => review.repurchase_intent).length;
   const repurchaseRate = reviews.length ? Math.round((repurchaseReviews / reviews.length) * 100) : 0;
@@ -157,7 +206,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
         <div className="empty-state">
           <p>{message}</p>
           <Link className="button button--primary" href="/products">
-            상품 검색하기
+            가격 확인하기
           </Link>
         </div>
       </main>
@@ -191,9 +240,13 @@ export default function ProductDetailClient({ productId }: { productId: string }
             </div>
           </dl>
           <div className="product-detail__actions">
-            <Link className="button button--secondary" href="/saved">
-              저장한 상품 보기
-            </Link>
+            {isSaved ? (
+              <Link className="button button--secondary" href="/saved">관심상품 보기</Link>
+            ) : (
+              <button className="button button--secondary" type="button" onClick={handleSaveProduct} disabled={isSaving}>
+                {isSaving ? "저장 중" : "관심상품 저장"}
+              </button>
+            )}
             <a className="button button--primary" href={product.product_url} target="_blank" rel="noreferrer">
               구매하러 가기
             </a>
@@ -250,6 +303,10 @@ export default function ProductDetailClient({ productId }: { productId: string }
           <article>
             <span>재구매 의사</span>
             <strong>{reviews.length ? `${repurchaseRate}%` : "없음"}</strong>
+          </article>
+          <article>
+            <span>내 후기</span>
+            <strong>{currentUserId && reviews.some((review) => review.user_id === currentUserId) ? "작성함" : "작성 전"}</strong>
           </article>
         </section>
 

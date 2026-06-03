@@ -39,6 +39,13 @@ type SearchProduct = {
   lastSyncedAt: string;
 };
 
+type PriceHistoryRow = {
+  id: string;
+  price: number;
+  mall_name: string | null;
+  checked_at: string;
+};
+
 const statusOptions = [
   { value: "WISHLIST", label: "관심 있음" },
   { value: "WANT_TO_BUY", label: "구매 예정" },
@@ -91,6 +98,8 @@ export default function SavedProductsClient() {
   const [reviewContent, setReviewContent] = useState("");
   const [reviewRating, setReviewRating] = useState("5");
   const [repurchaseIntent, setRepurchaseIntent] = useState("true");
+  const [historyByProductId, setHistoryByProductId] = useState<Record<string, PriceHistoryRow[]>>({});
+  const [expandedHistoryId, setExpandedHistoryId] = useState("");
 
   useEffect(() => {
     async function loadSavedProducts() {
@@ -104,7 +113,7 @@ export default function SavedProductsClient() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setMessage("로그인 후 찜 목록을 볼 수 있습니다.");
+        setMessage("로그인 후 관심상품을 볼 수 있습니다.");
         return;
       }
 
@@ -121,7 +130,7 @@ export default function SavedProductsClient() {
       }
 
       setItems(normalizeSavedRows(data));
-      setMessage(data?.length ? "" : "아직 찜한 상품이 없습니다.");
+      setMessage(data?.length ? "" : "아직 관심상품이 없습니다.");
     }
 
     loadSavedProducts();
@@ -298,7 +307,7 @@ export default function SavedProductsClient() {
       return;
     }
 
-    const shouldDelete = window.confirm("이 상품을 찜 목록에서 삭제할까요?");
+    const shouldDelete = window.confirm("이 상품을 관심상품에서 삭제할까요?");
     if (!shouldDelete) {
       return;
     }
@@ -316,10 +325,42 @@ export default function SavedProductsClient() {
       setItems(previousItems);
       setNotice(error.message);
     } else if (nextItems.length === 0) {
-      setMessage("아직 찜한 상품이 없습니다.");
+      setMessage("아직 관심상품이 없습니다.");
     }
 
     setPendingId("");
+  }
+
+  async function handleToggleHistory(item: SavedProductRow) {
+    const productId = item.external_product_id;
+    if (!supabase || !productId) {
+      setNotice("가격 기록을 확인할 상품 정보가 없습니다.");
+      return;
+    }
+
+    if (expandedHistoryId === item.id) {
+      setExpandedHistoryId("");
+      return;
+    }
+
+    setExpandedHistoryId(item.id);
+    if (historyByProductId[productId]) {
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("price_histories")
+      .select("id, price, mall_name, checked_at")
+      .eq("external_product_id", productId)
+      .order("checked_at", { ascending: false })
+      .limit(3);
+
+    if (error) {
+      setNotice(error.message);
+      return;
+    }
+
+    setHistoryByProductId((current) => ({ ...current, [productId]: (data ?? []) as PriceHistoryRow[] }));
   }
 
   const summary = items.reduce(
@@ -349,15 +390,15 @@ export default function SavedProductsClient() {
   return (
     <main className="saved-page">
       <section className="page-heading">
-        <p className="section-label">저장한 상품</p>
-        <h1>관심 상품의 가격 변화를 확인하세요.</h1>
+        <p className="section-label">관심상품</p>
+        <h1>자주 사는 상품의 가격 변화를 확인하세요.</h1>
         <p className="page-heading__copy">가격은 마지막 확인 시각 기준입니다. 최종 결제가는 쇼핑몰에서 다시 확인해주세요.</p>
       </section>
 
       {!message ? (
-        <section className="metric-grid" aria-label="저장 상품 가격 요약">
+        <section className="metric-grid" aria-label="관심상품 가격 요약">
           <article>
-            <span>저장한 상품</span>
+            <span>관심상품</span>
             <strong>{items.length}개</strong>
           </article>
           <article>
@@ -379,7 +420,7 @@ export default function SavedProductsClient() {
         <div className="empty-state">
           <p>{message}</p>
           <Link className="button button--primary" href={message.includes("로그인") ? "/auth?redirect=/saved" : "/products"}>
-            {message.includes("로그인") ? "로그인하기" : "상품 검색하기"}
+            {message.includes("로그인") ? "로그인하기" : "가격 확인하기"}
           </Link>
         </div>
       ) : null}
@@ -434,6 +475,9 @@ export default function SavedProductsClient() {
                 <Link className="button button--secondary" href={`/products/${product.id}`}>
                   상세 보기
                 </Link>
+                <button className="button button--secondary" type="button" onClick={() => handleToggleHistory(item)}>
+                  {expandedHistoryId === item.id ? "가격 기록 닫기" : "최근 가격 기록"}
+                </button>
                 <a className="button button--secondary" href={product.product_url} target="_blank" rel="noreferrer">
                   구매하러 가기
                 </a>
@@ -441,7 +485,7 @@ export default function SavedProductsClient() {
                   후기 작성
                 </button>
                 <button className="button button--danger" type="button" onClick={() => handleDelete(item.id)} disabled={pendingId === item.id}>
-                  찜 취소
+                  관심상품 해제
                 </button>
               </div>
               {reviewingId === item.id ? (
@@ -482,6 +526,22 @@ export default function SavedProductsClient() {
                     </button>
                   </div>
                 </form>
+              ) : null}
+              {expandedHistoryId === item.id ? (
+                <div className="saved-history">
+                  <strong>최근 가격 기록</strong>
+                  {(historyByProductId[item.external_product_id ?? ""] ?? []).length ? (
+                    (historyByProductId[item.external_product_id ?? ""] ?? []).map((history) => (
+                      <div key={history.id}>
+                        <span>{history.mall_name || "쇼핑몰 확인 필요"}</span>
+                        <strong>{formatPrice(history.price)}</strong>
+                        <small>{formatCheckedAt(history.checked_at)}</small>
+                      </div>
+                    ))
+                  ) : (
+                    <p>아직 가격 기록이 없습니다.</p>
+                  )}
+                </div>
               ) : null}
             </article>
           );

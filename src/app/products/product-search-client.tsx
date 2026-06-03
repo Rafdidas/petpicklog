@@ -2,7 +2,6 @@
 
 import { FormEvent, useCallback, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCheckedAt, formatPrice } from "@/lib/format";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -62,26 +61,11 @@ export default function ProductSearchClient({
     searchProducts(query);
   }
 
-  async function handleSave(product: ExternalProduct) {
+  async function ensureExternalProduct(product: ExternalProduct) {
     const supabase = createBrowserSupabaseClient();
-    setErrorMessage("");
-    setSuccessMessage("");
 
     if (!supabase) {
-      setErrorMessage("Supabase 환경 변수를 확인해주세요.");
-      return;
-    }
-
-    setSavingId(product.externalId);
-
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      router.push("/auth?redirect=/products");
-      setSavingId("");
-      return;
+      throw new Error("Supabase 환경 변수를 확인해주세요.");
     }
 
     const { data: existingProduct, error: existingProductError } = await supabase
@@ -92,9 +76,7 @@ export default function ProductSearchClient({
       .maybeSingle();
 
     if (existingProductError) {
-      setErrorMessage(existingProductError.message);
-      setSavingId("");
-      return;
+      throw existingProductError;
     }
 
     let externalProductId = existingProduct?.id as string | undefined;
@@ -119,12 +101,44 @@ export default function ProductSearchClient({
         .single();
 
       if (insertProductError) {
-        setErrorMessage(insertProductError.message);
-        setSavingId("");
-        return;
+        throw insertProductError;
       }
 
       externalProductId = insertedProduct.id as string;
+    }
+
+    return { supabase, externalProductId };
+  }
+
+  async function handleSave(product: ExternalProduct) {
+    setErrorMessage("");
+    setSuccessMessage("");
+    setSavingId(product.externalId);
+
+    const supabase = createBrowserSupabaseClient();
+    if (!supabase) {
+      setErrorMessage("Supabase 환경 변수를 확인해주세요.");
+      setSavingId("");
+      return;
+    }
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      router.push("/auth?redirect=/products");
+      setSavingId("");
+      return;
+    }
+
+    let externalProductId: string;
+    try {
+      ({ externalProductId } = await ensureExternalProduct(product));
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "상품 정보를 저장하지 못했습니다.");
+      setSavingId("");
+      return;
     }
 
     const { data: existingSave, error: existingSaveError } = await supabase
@@ -141,7 +155,7 @@ export default function ProductSearchClient({
     }
 
     if (existingSave) {
-      setSuccessMessage("이미 찜한 상품입니다.");
+      setSuccessMessage("이미 관심상품으로 저장한 상품입니다.");
       setSavingId("");
       return;
     }
@@ -168,16 +182,31 @@ export default function ProductSearchClient({
       checked_at: product.lastSyncedAt
     });
 
-    setSuccessMessage("찜 목록에 저장했습니다.");
+    setSuccessMessage("관심상품으로 저장했습니다.");
     setSavingId("");
+  }
+
+  async function handleOpenDetail(product: ExternalProduct) {
+    setErrorMessage("");
+    setSuccessMessage("");
+    setSavingId(product.externalId);
+
+    try {
+      const { externalProductId } = await ensureExternalProduct(product);
+      router.push(`/products/${externalProductId}`);
+    } catch {
+      router.push(`/auth?redirect=${encodeURIComponent(`/products?query=${query}`)}`);
+    } finally {
+      setSavingId("");
+    }
   }
 
   return (
     <main className="products-page">
       <section className="page-heading">
-        <p className="section-label">상품 검색</p>
-        <h1>반려동물 용품의 현재 확인 가격을 검색합니다.</h1>
-        <p className="page-heading__copy">네이버 쇼핑 API 검색 결과만 표시합니다. 최종 가격과 옵션은 쇼핑몰에서 확인해야 합니다.</p>
+        <p className="section-label">용품 가격 확인</p>
+        <h1>자주 사는 반려동물 용품의 가격을 확인해보세요.</h1>
+        <p className="page-heading__copy">사료, 간식, 배변용품 등을 검색하고 관심상품으로 저장할 수 있어요. 최종 가격과 옵션은 쇼핑몰에서 확인해주세요.</p>
       </section>
 
       <form className="search-bar" onSubmit={handleSearch}>
@@ -219,11 +248,11 @@ export default function ProductSearchClient({
               <small>마지막 확인: {formatCheckedAt(product.lastSyncedAt)}</small>
               <div className="product-card--actions">
                 <button className="button button--secondary" type="button" onClick={() => handleSave(product)} disabled={savingId === product.externalId}>
-                  {savingId === product.externalId ? "저장 중" : "찜하기"}
+                  {savingId === product.externalId ? "저장 중" : "관심상품 저장"}
                 </button>
-                <Link className="button button--ghost" href={`/products?query=${encodeURIComponent(product.title)}`}>
-                  가격 확인
-                </Link>
+                <button className="button button--ghost" type="button" onClick={() => handleOpenDetail(product)} disabled={savingId === product.externalId}>
+                  상세 보기
+                </button>
                 <a className="button button--ghost" href={product.productUrl} target="_blank" rel="noreferrer">
                   구매하러 가기
                 </a>

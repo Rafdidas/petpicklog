@@ -10,7 +10,7 @@ export default function AuthClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [mode, setMode] = useState<AuthMode>(() => (searchParams.get("mode") === "signup" ? "signup" : "login"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -66,6 +66,12 @@ export default function AuthClient() {
       <section className="auth-panel">
         <p className="section-label">계정</p>
         <h1>{mode === "login" ? "로그인" : "회원가입"}</h1>
+        <div className="auth-benefits">
+          <strong>로그인 후 이용할 수 있어요.</strong>
+          <span>관심상품 저장</span>
+          <span>저장한 상품 가격 변화 확인</span>
+          <span>상품 후기 작성</span>
+        </div>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label htmlFor="email">이메일</label>
           <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />

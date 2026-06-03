@@ -50,18 +50,26 @@ export default function Header() {
     <header className="header">
       <div className="header--inner">
         <Link className="header--inner__logo" href="/">
-          펫픽
+          <span className="header--inner__logo-mark" aria-hidden="true">+</span>
+          <strong>펫픽</strong>
+          <small>반려동물 생활 플랫폼</small>
         </Link>
         <nav className="header--inner__nav" aria-label="주요 메뉴">
-          <Link href="/products">용품 검색</Link>
-          {user ? <Link href="/saved">저장한 상품</Link> : null}
-          <Link href="/hospitals">동물병원 찾기</Link>
+          <Link href="/products">가격 확인</Link>
+          <Link href="/saved">관심상품</Link>
+          <Link href="/hospitals">동물병원</Link>
+          <Link href="/guide">가이드</Link>
           {isReady && user ? (
             <button className="header--inner__nav-button" type="button" onClick={handleSignOut}>
               로그아웃
             </button>
           ) : (
-            <Link href={loginHref}>로그인</Link>
+            <>
+              <Link className="header--inner__auth-link" href={loginHref}>로그인</Link>
+              <Link className="header--inner__auth-link header--inner__auth-link--signup" href={`/auth?mode=signup&redirect=${encodeURIComponent(pathname || "/products")}`}>
+                회원가입
+              </Link>
+            </>
           )}
         </nav>
       </div>
