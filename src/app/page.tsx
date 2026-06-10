@@ -52,7 +52,7 @@ export default function HomePage() {
     <main className="home home-platform">
       <section className="platform-hero">
         <div className="platform-hero__content">
-          <p className="section-label">반려동물 생활 플랫폼</p>
+          <p className="section-label">공공데이터 + 쇼핑 API 기반</p>
           <h1>반려생활에 필요한<br />정보를 한곳에서 확인하세요.</h1>
           <p>사료, 간식, 배변용품 가격을 검색하고 관심상품으로 저장해보세요.<br />우리 동네 동물병원 정보와 반려생활 가이드도 함께 확인할 수 있어요.</p>
           <form className="platform-search" action="/products">
@@ -67,11 +67,30 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-        <aside className="platform-hero__aside">
-          <span>바로가기</span>
-          <strong>우리 동네 동물병원을<br />찾아보세요.</strong>
-          <Link className="button button--secondary" href="/hospitals">동물병원 찾기</Link>
-        </aside>
+        <div className="platform-hero__visual" aria-hidden="true">
+          <div className="hero-orbit hero-orbit--one" />
+          <div className="hero-orbit hero-orbit--two" />
+          <div className="hero-visual-card hero-visual-card--main">
+            <span className="hero-visual-card__eyebrow">오늘의 반려생활</span>
+            <strong>필요한 정보를<br />가볍게 찾아보세요.</strong>
+            <div className="hero-visual-card__pet">
+              <span>pet</span>
+              <b>pick</b>
+            </div>
+            <div className="hero-visual-card__stats">
+              <span><b>장소</b> 우리 동네 정보</span>
+              <span><b>가격</b> 최근 확인 가격</span>
+            </div>
+          </div>
+          <div className="hero-visual-card hero-visual-card--place">
+            <span className="feature-card__icon"><Icon name="hospital" /></span>
+            <span><small>가까운 동물병원</small><strong>지역별로 확인</strong></span>
+          </div>
+          <div className="hero-visual-card hero-visual-card--price">
+            <span className="feature-card__icon"><Icon name="price" /></span>
+            <span><small>관심상품 가격</small><strong>변화를 한눈에</strong></span>
+          </div>
+        </div>
       </section>
 
       <section className="platform-section">

@@ -50,7 +50,7 @@ export default function Header() {
     <header className="header">
       <div className="header--inner">
         <Link className="header--inner__logo" href="/">
-          <span className="header--inner__logo-mark" aria-hidden="true">+</span>
+          <span className="header--inner__logo-mark" aria-hidden="true">P</span>
           <strong>펫픽</strong>
           <small>반려동물 생활 플랫폼</small>
         </Link>

@@ -4,32 +4,50 @@ import { FormEvent, useCallback, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { formatCheckedAt, formatPrice } from "@/lib/format";
+import { buildPetShoppingQuery } from "@/lib/pet-search";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { ExternalProduct } from "@/types/product";
 
 const getSourceLabel = (source: ExternalProduct["source"]) => (source === "NAVER" ? "네이버 쇼핑 기준" : source);
 const recommendedQueries = ["강아지 사료", "고양이 모래", "배변패드", "강아지 샴푸", "고양이 간식", "영양제"];
+const petOptions = [
+  { value: "all", label: "전체 반려동물" },
+  { value: "dog", label: "강아지" },
+  { value: "cat", label: "고양이" },
+  { value: "custom", label: "직접입력" }
+];
 
 export default function ProductSearchClient({
+  initialCustomPet,
   initialError,
+  initialPetType,
   initialProducts,
   initialQuery
 }: {
+  initialCustomPet: string;
   initialError: string;
+  initialPetType: string;
   initialProducts: ExternalProduct[];
   initialQuery: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
+  const [petType, setPetType] = useState(initialPetType);
+  const [customPet, setCustomPet] = useState(initialCustomPet);
   const [products, setProducts] = useState<ExternalProduct[]>(initialProducts);
   const [isLoading, setIsLoading] = useState(false);
   const [savingId, setSavingId] = useState("");
   const [errorMessage, setErrorMessage] = useState(initialError);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const searchProducts = useCallback(async (nextQuery: string) => {
+  const searchProducts = useCallback(async (nextQuery: string, nextPetType: string, nextCustomPet: string) => {
     if (!nextQuery.trim()) {
       setErrorMessage("검색어를 입력해주세요.");
+      return;
+    }
+
+    if (nextPetType === "custom" && !nextCustomPet.trim()) {
+      setErrorMessage("직접입력 반려동물을 입력해주세요. 예: 앵무새, 거북이");
       return;
     }
 
@@ -38,7 +56,16 @@ export default function ProductSearchClient({
     setSuccessMessage("");
 
     try {
-      const response = await fetch(`/api/products/search?query=${encodeURIComponent(nextQuery)}`);
+      const params = new URLSearchParams({
+        query: nextQuery,
+        petType: nextPetType
+      });
+
+      if (nextPetType === "custom") {
+        params.set("customPet", nextCustomPet);
+      }
+
+      const response = await fetch(`/api/products/search?${params.toString()}`);
       const data = (await response.json()) as { products?: ExternalProduct[]; error?: string };
 
       if (!response.ok) {
@@ -58,7 +85,7 @@ export default function ProductSearchClient({
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    searchProducts(query);
+    searchProducts(query, petType, customPet);
   }
 
   async function ensureExternalProduct(product: ExternalProduct) {
@@ -217,9 +244,41 @@ export default function ProductSearchClient({
         </button>
       </form>
 
+      <section className="pet-search-panel" aria-label="반려동물 검색 범위">
+        <div className="pet-filter">
+          {petOptions.map((option) => (
+            <button
+              className={petType === option.value ? "pet-filter__item pet-filter__item--active" : "pet-filter__item"}
+              key={option.value}
+              type="button"
+              onClick={() => setPetType(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        {petType === "custom" ? (
+          <label className="pet-custom-input" htmlFor="custom-pet">
+            반려동물 직접입력
+            <input id="custom-pet" value={customPet} onChange={(event) => setCustomPet(event.target.value)} placeholder="예: 앵무새, 거북이, 햄스터" />
+          </label>
+        ) : null}
+        <p>
+          실제 검색어: <strong>{query.trim() ? buildPetShoppingQuery(query, { petType, customPet }) : "검색어 입력 전"}</strong>
+        </p>
+      </section>
+
       <section className="quick-links" aria-label="추천 검색어">
         {recommendedQueries.map((item) => (
-          <button className="quick-links__item" type="button" key={item} onClick={() => setQuery(item)}>
+          <button
+            className="quick-links__item"
+            type="button"
+            key={item}
+            onClick={() => {
+              setQuery(item);
+              searchProducts(item, petType, customPet);
+            }}
+          >
             {item}
           </button>
         ))}

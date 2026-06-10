@@ -1,4 +1,5 @@
 import type { ExternalProduct } from "@/types/product";
+import { buildPetShoppingQuery, type PetSearchTarget } from "./pet-search";
 
 type NaverShoppingItem = {
   productId: string;
@@ -20,11 +21,12 @@ type NaverShoppingResponse = {
 
 const stripHtml = (value: string) => value.replace(/<[^>]*>/g, "").replace(/&quot;/g, '"').trim();
 
-export async function searchShoppingProducts(query: string): Promise<ExternalProduct[]> {
+export async function searchShoppingProducts(query: string, options: PetSearchTarget = {}): Promise<ExternalProduct[]> {
   const clientId = process.env.NAVER_SHOPPING_CLIENT_ID;
   const clientSecret = process.env.NAVER_SHOPPING_CLIENT_SECRET;
+  const shoppingQuery = buildPetShoppingQuery(query, options);
 
-  if (!query.trim()) {
+  if (!shoppingQuery) {
     return [];
   }
 
@@ -33,7 +35,7 @@ export async function searchShoppingProducts(query: string): Promise<ExternalPro
   }
 
   const response = await fetch(
-    `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=20&sort=sim`,
+    `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(shoppingQuery)}&display=20&sort=sim`,
     {
       headers: {
         "X-Naver-Client-Id": clientId,

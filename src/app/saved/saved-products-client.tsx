@@ -169,7 +169,7 @@ export default function SavedProductsClient() {
     setNotice("");
 
     try {
-      const response = await fetch(`/api/products/search?query=${encodeURIComponent(product.title)}`);
+      const response = await fetch(`/api/products/search?query=${encodeURIComponent(product.title)}&scope=raw`);
       const data = (await response.json()) as { products?: SearchProduct[]; error?: string };
 
       if (!response.ok) {
