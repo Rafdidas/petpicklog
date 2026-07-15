@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCheckedAt, formatPrice } from "@/lib/format";
 import { buildPetShoppingQuery } from "@/lib/pet-search";
@@ -233,7 +234,7 @@ export default function ProductSearchClient({
       <section className="page-heading">
         <p className="section-label">실시간 검색</p>
         <h1>네이버 쇼핑에서 지금 이 순간 가격을 검색해보세요.</h1>
-        <p className="page-heading__copy">카탈로그에 없는 상품은 이곳에서 실시간으로 검색할 수 있어요. 매일 자동으로 가격을 추적하는 상품은 <a href="/catalog">카탈로그</a>에서 확인하세요.</p>
+        <p className="page-heading__copy">카탈로그에 없는 상품은 이곳에서 실시간으로 검색할 수 있어요. 매일 자동으로 가격을 추적하는 상품은 <Link href="/catalog">카탈로그</Link>에서 확인하세요.</p>
       </section>
 
       <form className="search-bar" onSubmit={handleSearch}>
