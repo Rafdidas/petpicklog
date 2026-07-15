@@ -44,7 +44,7 @@ export default function Header() {
     router.refresh();
   }
 
-  const loginHref = `/auth?redirect=${encodeURIComponent(pathname || "/products")}`;
+  const loginHref = `/auth?redirect=${encodeURIComponent(pathname || "/catalog")}`;
 
   return (
     <header className="header">
@@ -52,24 +52,23 @@ export default function Header() {
         <Link className="header--inner__logo" href="/">
           <span className="header--inner__logo-mark" aria-hidden="true">P</span>
           <strong>펫픽</strong>
-          <small>반려동물 생활 플랫폼</small>
+          <small>가격추적</small>
         </Link>
         <nav className="header--inner__nav" aria-label="주요 메뉴">
-          <Link href="/products">가격 확인</Link>
-          <Link href="/saved">관심상품</Link>
+          <Link className="header--inner__nav-primary" href="/catalog">카탈로그</Link>
+          <Link className="header--inner__nav-primary" href="/deals">급락 특가</Link>
+          <Link href="/products">실시간 검색</Link>
           <Link href="/hospitals">동물병원</Link>
           <Link href="/guide">가이드</Link>
+          <Link href="/saved">관심상품</Link>
           {isReady && user ? (
             <button className="header--inner__nav-button" type="button" onClick={handleSignOut}>
               로그아웃
             </button>
           ) : (
-            <>
-              <Link className="header--inner__auth-link" href={loginHref}>로그인</Link>
-              <Link className="header--inner__auth-link header--inner__auth-link--signup" href={`/auth?mode=signup&redirect=${encodeURIComponent(pathname || "/products")}`}>
-                회원가입
-              </Link>
-            </>
+            <Link className="header--inner__auth-link--signup" href={loginHref}>
+              로그인
+            </Link>
           )}
         </nav>
       </div>
