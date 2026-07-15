@@ -231,9 +231,9 @@ export default function ProductSearchClient({
   return (
     <main className="products-page">
       <section className="page-heading">
-        <p className="section-label">용품 가격 확인</p>
-        <h1>자주 사는 반려동물 용품의 가격을 확인해보세요.</h1>
-        <p className="page-heading__copy">사료, 간식, 배변용품 등을 검색하고 관심상품으로 저장할 수 있어요. 최종 가격과 옵션은 쇼핑몰에서 확인해주세요.</p>
+        <p className="section-label">실시간 검색</p>
+        <h1>네이버 쇼핑에서 지금 이 순간 가격을 검색해보세요.</h1>
+        <p className="page-heading__copy">카탈로그에 없는 상품은 이곳에서 실시간으로 검색할 수 있어요. 매일 자동으로 가격을 추적하는 상품은 <a href="/catalog">카탈로그</a>에서 확인하세요.</p>
       </section>
 
       <form className="search-bar" onSubmit={handleSearch}>
