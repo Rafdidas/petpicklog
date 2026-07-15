@@ -128,3 +128,40 @@ export async function fetchCatalogPage(filters: CatalogFilters): Promise<{ items
 
   return { items: ((data ?? []) as StatsRow[]).map(mapStatsRow), total: count ?? 0 };
 }
+
+export async function fetchProductStats(externalProductId: string): Promise<ProductPriceStats | null> {
+  const supabase = createServerSupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data } = await supabase
+    .from("product_price_stats")
+    .select("*")
+    .eq("external_product_id", externalProductId)
+    .maybeSingle();
+
+  return data ? mapStatsRow(data as StatsRow) : null;
+}
+
+export type PriceHistoryPoint = { price: number; checkedAt: string; mallName: string | null };
+
+export async function fetchPriceHistory(externalProductId: string, limit: number): Promise<PriceHistoryPoint[]> {
+  const supabase = createServerSupabaseClient();
+  if (!supabase) {
+    return [];
+  }
+
+  const { data } = await supabase
+    .from("price_histories")
+    .select("price, checked_at, mall_name")
+    .eq("external_product_id", externalProductId)
+    .order("checked_at", { ascending: true })
+    .limit(limit);
+
+  return ((data ?? []) as { price: number; checked_at: string; mall_name: string | null }[]).map((row) => ({
+    price: row.price,
+    checkedAt: row.checked_at,
+    mallName: row.mall_name
+  }));
+}
