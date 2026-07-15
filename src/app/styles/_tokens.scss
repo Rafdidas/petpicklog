@@ -1,0 +1,23 @@
+:root {
+  --color-canvas: #ffffff;
+  --color-ink: #000000;
+  --color-muted: #5d5d5d;
+  --color-ink-secondary: #303033;
+  --color-ink-tertiary: #474747;
+  --color-border: #dddddd;
+  --color-accent: #ff4800;
+
+  --font-sans: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Malgun Gothic", sans-serif;
+
+  --space-xs: 2px;
+  --space-sm: 4px;
+  --space-md: 8px;
+  --space-base: 16px;
+  --space-lg: 24px;
+  --space-xl: 28px;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-chip: 10px;
+  --radius-full: 9999px;
+}
