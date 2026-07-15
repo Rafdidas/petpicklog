@@ -73,3 +73,58 @@ export async function fetchCatalogSummary(): Promise<CatalogSummary> {
     lastCollectedAt: (lastResult.data as { checked_at: string } | null)?.checked_at ?? null
   };
 }
+
+export type CatalogSort = "drop" | "price" | "recent";
+
+export type CatalogFilters = {
+  query?: string;
+  categorySlug?: string;
+  petType?: string;
+  maxPrice?: number;
+  minDropPct?: number;
+  sort?: CatalogSort;
+  page?: number;
+  pageSize?: number;
+};
+
+export async function fetchCatalogPage(filters: CatalogFilters): Promise<{ items: ProductPriceStats[]; total: number }> {
+  const supabase = createServerSupabaseClient();
+  if (!supabase) {
+    return { items: [], total: 0 };
+  }
+
+  const page = filters.page && filters.page > 0 ? filters.page : 1;
+  const pageSize = filters.pageSize ?? 24;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  let query = supabase.from("product_price_stats").select("*", { count: "exact" });
+
+  if (filters.query) {
+    query = query.ilike("title", `%${filters.query}%`);
+  }
+  if (filters.categorySlug) {
+    query = query.eq("category_slug", filters.categorySlug);
+  }
+  if (filters.petType) {
+    query = query.in("pet_type", [filters.petType, "both"]);
+  }
+  if (filters.maxPrice) {
+    query = query.lte("current_price", filters.maxPrice);
+  }
+  if (filters.minDropPct) {
+    query = query.gt("drop_pct", filters.minDropPct - 1);
+  }
+
+  if (filters.sort === "price") {
+    query = query.order("current_price", { ascending: true });
+  } else if (filters.sort === "recent") {
+    query = query.order("last_checked_at", { ascending: false });
+  } else {
+    query = query.order("drop_pct", { ascending: false });
+  }
+
+  const { data, count } = await query.range(from, to);
+
+  return { items: ((data ?? []) as StatsRow[]).map(mapStatsRow), total: count ?? 0 };
+}
