@@ -11,7 +11,7 @@ AI 에이전트가 이 저장소에서 작업할 때 따르는 지침이다. 사
 
 > 전체 설계는 단일 소스로 [docs/superpowers/specs/2026-07-15-catalog-price-redesign-design.md](docs/superpowers/specs/2026-07-15-catalog-price-redesign-design.md)를 따른다. 구현 계획은 [백엔드](docs/superpowers/plans/2026-07-15-catalog-price-redesign-backend.md)/[프론트엔드](docs/superpowers/plans/2026-07-15-catalog-price-redesign-frontend.md). 이 파일과 충돌하면 설계서가 우선이다.
 >
-> `docs/superpowers/specs/2026-06-29-petfit-redesign-design.md`(옛 "펫핏" 기획, `/pets` 프로필·큐레이션 추천 중심)는 **구현되지 않고 폐기됐다**. 참고하지 말 것.
+> 옛 "펫핏" 기획(`/pets` 프로필·큐레이션 추천 중심)은 구현되지 않고 폐기됐다. 관련 설계서는 삭제됨(변경 로그는 `HANDOFF.md` 참고).
 
 ## 기술 스택
 

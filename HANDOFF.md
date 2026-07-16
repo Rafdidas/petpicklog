@@ -1,7 +1,7 @@
 # HANDOFF.md — AI 간 인수인계
 
 다른 AI 세션이 이어받을 때 가장 먼저 읽는 파일이다. **"지금 어디까지 왔고, 다음에 뭘 하면 되는가"**를 담는다.
-영구 규칙·아키텍처는 [AGENTS.md](AGENTS.md)와 [설계서](docs/superpowers/specs/2026-06-29-petfit-redesign-design.md)에 있다. 이 파일은 **휘발성 진행 상태**만 다룬다.
+영구 규칙·아키텍처는 [AGENTS.md](AGENTS.md)와 [설계서](docs/superpowers/specs/2026-07-15-catalog-price-redesign-design.md)에 있다. 이 파일은 **휘발성 진행 상태**만 다룬다.
 
 ---
 
@@ -20,9 +20,9 @@
 
 **단계: 카탈로그 기반 가격추적 전면 개편 — 구현 완료, 배포됨, 실데이터로 검증됨.**
 
-> ⚠️ **2026-06-29 "펫핏(PetFit)" 재설계 계획은 폐기되지 않고 그냥 구현되지 않은 채 방치됐다.** 그 계획(`docs/superpowers/specs/2026-06-29-petfit-redesign-design.md`, `AGENTS.md`가 가리키는 설계서)은 `/pets` 프로필, 룰 기반 큐레이션(`lib/curation.ts`), `/api/cron/refresh-prices` 방식을 전제로 했다. 이번 세션은 그 계획을 이어받지 않고 instmoa.com(악기 가격비교 서비스)을 참고해 **완전히 다른 방향**(카탈로그 자동 수집 + 급락 특가, 큐레이션 없음)으로 처음부터 다시 브레인스토밍해서 진행했다. 제품명도 "펫핏"이 아니라 "펫픽"으로 굳어졌다. **`AGENTS.md`는 이 사실을 반영하지 못한 채 옛 설계를 가리키고 있으니, 다음 세션에서 `AGENTS.md` 갱신 여부를 사용자에게 먼저 확인할 것.**
+(2026-06-29의 옛 "펫핏" 기획은 구현 전에 폐기됐다. 설계서 삭제, `AGENTS.md`도 현재 구조로 갱신 완료 — 자세한 경위는 변경 로그 참고.)
 
-- 새 설계서: [docs/superpowers/specs/2026-07-15-catalog-price-redesign-design.md](docs/superpowers/specs/2026-07-15-catalog-price-redesign-design.md)
+- 설계서: [docs/superpowers/specs/2026-07-15-catalog-price-redesign-design.md](docs/superpowers/specs/2026-07-15-catalog-price-redesign-design.md)
 - 구현 계획: [백엔드](docs/superpowers/plans/2026-07-15-catalog-price-redesign-backend.md) / [프론트엔드](docs/superpowers/plans/2026-07-15-catalog-price-redesign-frontend.md) — 각 12~13개 태스크, 전부 완료·리뷰 승인됨.
 - **커밋 26개, main에 직접 push 완료** (`ee6b0e8..5d8040a`). 워크트리/PR 없이 진행(사용자 명시 지시).
 - **배포**: https://petpicklog.vercel.app (Vercel, env var 등록 완료). GitHub: https://github.com/Rafdidas/petpicklog
