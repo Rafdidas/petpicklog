@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -9,9 +10,11 @@ import SaveButtonClient from "./save-button-client";
 
 export const revalidate = 3600;
 
+const getProductStats = cache(fetchProductStats);
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
-  const stats = await fetchProductStats(id);
+  const stats = await getProductStats(id);
 
   if (!stats) {
     return { title: "상품을 찾을 수 없습니다 | 펫픽" };
@@ -25,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function CatalogDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const stats = await fetchProductStats(id);
+  const stats = await getProductStats(id);
 
   if (!stats) {
     notFound();
@@ -50,7 +53,7 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
 
   return (
     <main className="catalog-detail-page">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <section className="catalog-detail">
         {stats.imageUrl ? (
           <Image src={stats.imageUrl} alt="" width={480} height={360} />

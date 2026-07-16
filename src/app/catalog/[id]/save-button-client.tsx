@@ -31,7 +31,9 @@ export default function SaveButtonClient({ externalProductId, currentPrice }: { 
       setIsSaved(Boolean(data));
     }
 
-    checkSaved();
+    checkSaved().catch(() => {
+      // 저장 여부 확인 실패는 조용히 무시 — "관심상품 저장" 버튼이 기본값으로 노출된다.
+    });
   }, [externalProductId, supabase]);
 
   async function handleSave() {
