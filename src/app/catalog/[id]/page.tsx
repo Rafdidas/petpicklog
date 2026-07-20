@@ -69,7 +69,13 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
           </div>
           <dl className="detail-list">
             <div><dt>14일 최고가</dt><dd>{formatPrice(stats.maxPrice14d)}</dd></div>
-            <div><dt>역대 최저가</dt><dd>{formatPrice(stats.minPriceAll)}{nearAllTimeLow ? " · 최저가 근접" : ""}</dd></div>
+            <div>
+              <dt>역대 최저가</dt>
+              <dd>
+                {formatPrice(stats.minPriceAll)}
+                {nearAllTimeLow ? <span className="badge badge--highlight">최저가 근접</span> : null}
+              </dd>
+            </div>
             <div><dt>마지막 확인</dt><dd>{formatCheckedAt(stats.lastCheckedAt)}</dd></div>
           </dl>
           <div className="catalog-detail__actions">
