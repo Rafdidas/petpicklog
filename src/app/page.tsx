@@ -1,13 +1,18 @@
 import Link from "next/link";
 import PriceCard from "@/components/PriceCard";
-import { fetchCatalogSummary, fetchTopDrops } from "@/lib/catalog";
+import CategoryTopProducts from "@/components/CategoryTopProducts";
+import { fetchCatalogSummary, fetchCategoryTopDrops, fetchTopDrops } from "@/lib/catalog";
 import { formatCheckedAt } from "@/lib/format";
 import { categories } from "@/lib/categories";
 
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [summary, topDrops] = await Promise.all([fetchCatalogSummary(), fetchTopDrops(6)]);
+  const [summary, topDrops, categoryTop] = await Promise.all([
+    fetchCatalogSummary(),
+    fetchTopDrops(6),
+    fetchCategoryTopDrops(8)
+  ]);
 
   return (
     <main className="home">
@@ -72,6 +77,9 @@ export default async function HomePage() {
             </Link>
           ))}
         </div>
+        {Object.keys(categoryTop).length ? (
+          <CategoryTopProducts categories={categories} productsByCategory={categoryTop} />
+        ) : null}
       </section>
 
       <section className="home-links">
