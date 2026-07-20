@@ -9,7 +9,7 @@ export default function PriceChart({ points }: { points: PriceHistoryPoint[] }) 
 
   return (
     <svg className="price-chart" viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} role="img" aria-label="가격 추이 차트">
-      <path d={path} fill="none" stroke="#ff4800" strokeWidth={2} />
+      <path d={path} fill="none" stroke="var(--color-accent)" strokeWidth={2} />
     </svg>
   );
 }
