@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ProductPriceStats } from "@/lib/price-stats";
+import { categories } from "@/lib/categories";
 
 type StatsRow = {
   external_product_id: string;
@@ -47,6 +48,30 @@ export async function fetchTopDrops(limit: number): Promise<ProductPriceStats[]>
     .limit(limit);
 
   return ((data ?? []) as StatsRow[]).map(mapStatsRow);
+}
+
+export type CategoryTopMap = Record<string, ProductPriceStats[]>;
+
+export async function fetchCategoryTopDrops(limit: number): Promise<CategoryTopMap> {
+  const supabase = createServerSupabaseClient();
+  if (!supabase) {
+    return {};
+  }
+
+  const entries = await Promise.all(
+    categories.map(async (category) => {
+      const { data } = await supabase
+        .from("product_price_stats")
+        .select("*")
+        .eq("category_slug", category.slug)
+        .order("drop_pct", { ascending: false })
+        .limit(limit);
+
+      return [category.slug, ((data ?? []) as StatsRow[]).map(mapStatsRow)] as const;
+    })
+  );
+
+  return Object.fromEntries(entries);
 }
 
 export type CatalogSummary = {
