@@ -1,15 +1,43 @@
 :root {
-  --color-canvas: #ffffff;
-  --color-ink: #000000;
-  --color-muted: #5d5d5d;
-  --color-ink-secondary: #303033;
-  --color-ink-tertiary: #474747;
-  --color-border: #dddddd;
-  --color-accent: #2c6496;
-  --color-accent-soft: #82add4;
-  --color-surface: #f0f0ed;
-  --color-highlight: #ddfd2c;
-  --color-danger: #ff4800;
+  --color-canvas: #f3f6fa;
+  --color-surface: #ffffff;
+  --color-ink: #17222b;
+  --color-ink-secondary: #2b3a47;
+  --color-muted: #5b6975;
+  --color-muted-2: #7c8b98;
+  --color-muted-3: #9aa8b5;
+  --color-muted-4: #8a98a5;
+  --color-border: #e5ecf2;
+  --color-border-input: #e0e8ef;
+  --color-divider: #eef3f7;
+
+  --color-accent: #bfdf74;
+  --color-accent-hover: #afd45c;
+  --color-accent-strong: #a9ce5b;
+  --color-accent-deep: #5e8f1f;
+  --color-accent-deep-hover: #487114;
+  --color-accent-ink: #2b3a16;
+  --color-accent-soft: #f0f6e3;
+  --color-accent-soft-2: #f6f9f1;
+  --color-accent-nav: #edf3e0;
+  --color-accent-nav-ink: #3e5c15;
+  --color-accent-card: #deebc4;
+  --color-accent-card-ink: #4e6428;
+  --color-accent-logo: #c3e17e;
+  --color-accent-badge-text: #cde68f;
+  --color-accent-eyebrow: #8fbe3f;
+
+  --color-surface-info: #eff5fb;
+  --color-surface-info-ink: #4a5c6d;
+  --color-chart-bar: #e3edf3;
+  --color-danger: #b36a4a;
+  --color-danger-hover: #8f4e33;
+
+  --shadow-card: 0 1px 4px rgba(23, 42, 60, 0.05);
+  --shadow-card-hover: 0 8px 22px rgba(23, 42, 60, 0.1);
+  --shadow-modal: 0 2px 12px rgba(23, 42, 60, 0.06);
+
+  --focus-ring: 0 0 0 3px rgba(169, 206, 91, 0.2);
 
   --font-sans: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Malgun Gothic", sans-serif;
 
@@ -20,8 +48,11 @@
   --space-lg: 24px;
   --space-xl: 28px;
 
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-chip: 10px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-input: 14px;
+  --radius-card: 20px;
+  --radius-card-lg: 22px;
+  --radius-card-xl: 26px;
   --radius-full: 9999px;
 }
