@@ -2,17 +2,7 @@ import Link from "next/link";
 import PriceCard from "@/components/PriceCard";
 import { fetchCatalogSummary, fetchTopDrops } from "@/lib/catalog";
 import { formatCheckedAt } from "@/lib/format";
-
-const categories = [
-  { slug: "food", label: "사료" },
-  { slug: "snack", label: "간식" },
-  { slug: "pad", label: "배변패드" },
-  { slug: "litter", label: "고양이 모래" },
-  { slug: "shampoo", label: "샴푸·위생용품" },
-  { slug: "supplement", label: "영양제" },
-  { slug: "toy", label: "장난감" },
-  { slug: "house", label: "하우스·이동장" }
-];
+import { categories } from "@/lib/categories";
 
 export const revalidate = 3600;
 

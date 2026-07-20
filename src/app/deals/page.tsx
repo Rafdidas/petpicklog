@@ -2,19 +2,9 @@ import { Suspense } from "react";
 import PriceCard from "@/components/PriceCard";
 import { fetchCatalogPage } from "@/lib/catalog";
 import DealsTabsClient from "./deals-tabs-client";
+import { categories } from "@/lib/categories";
 
 export const revalidate = 3600;
-
-const categories = [
-  { slug: "food", label: "사료" },
-  { slug: "snack", label: "간식" },
-  { slug: "pad", label: "배변패드" },
-  { slug: "litter", label: "고양이 모래" },
-  { slug: "shampoo", label: "샴푸·위생용품" },
-  { slug: "supplement", label: "영양제" },
-  { slug: "toy", label: "장난감" },
-  { slug: "house", label: "하우스·이동장" }
-];
 
 export default async function DealsPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category } = await searchParams;
