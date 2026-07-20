@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import type { Category } from "@/lib/categories";
 
-export default function DealsTabsClient({ categories }: { categories: { slug: string; label: string }[] }) {
+export default function DealsTabsClient({ categories }: { categories: Category[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const current = searchParams.get("category") ?? "";

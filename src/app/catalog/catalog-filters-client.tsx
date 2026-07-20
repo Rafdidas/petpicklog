@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { Category } from "@/lib/categories";
 
 const petOptions = [
   { value: "", label: "전체" },
@@ -23,7 +24,7 @@ const maxPriceOptions = [
   { value: "100000", label: "10만원 이하" }
 ];
 
-export default function CatalogFiltersClient({ categories }: { categories: { slug: string; label: string }[] }) {
+export default function CatalogFiltersClient({ categories }: { categories: Category[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category") ?? "";

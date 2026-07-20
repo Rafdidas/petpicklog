@@ -25,9 +25,11 @@ export default function CategoryTopProducts({ categories, productsByCategory }: 
               selected === category.slug ? "filter-strip__item filter-strip__item--active" : "filter-strip__item"
             }
             key={category.slug}
+            id={`category-top-tab-${category.slug}`}
             type="button"
             role="tab"
             aria-selected={selected === category.slug}
+            aria-controls="category-top-panel"
             onClick={() => setSelected(category.slug)}
           >
             {category.label}
@@ -35,13 +37,23 @@ export default function CategoryTopProducts({ categories, productsByCategory }: 
         ))}
       </div>
       {items.length ? (
-        <div className="card-grid" role="tabpanel">
+        <div
+          className="card-grid"
+          id="category-top-panel"
+          role="tabpanel"
+          aria-labelledby={`category-top-tab-${selected}`}
+        >
           {items.map((stats) => (
             <PriceCard stats={stats} key={stats.externalProductId} />
           ))}
         </div>
       ) : (
-        <div className="empty-state" role="tabpanel">
+        <div
+          className="empty-state"
+          id="category-top-panel"
+          role="tabpanel"
+          aria-labelledby={`category-top-tab-${selected}`}
+        >
           <p>아직 추적 중인 상품이 없어요.</p>
         </div>
       )}
