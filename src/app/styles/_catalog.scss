@@ -52,6 +52,7 @@
 .home-hero {
   padding: 64px 0 40px;
   border-bottom: 1px solid var(--color-border);
+  background: var(--color-accent-soft);
 
   h1 {
     margin: 16px 0;
@@ -63,7 +64,7 @@
   p {
     margin: 0 0 24px;
     max-width: 560px;
-    color: var(--color-muted);
+    color: var(--color-ink);
     font-size: 15px;
     line-height: 1.6;
   }
@@ -76,6 +77,7 @@
     padding: 4px;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
+    background: var(--color-canvas);
 
     input {
       flex: 1;
