@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import PriceCard from "@/components/PriceCard";
+import EmptyState from "@/components/ui/EmptyState";
 import { fetchCatalogPage } from "@/lib/catalog";
 import DealsTabsClient from "./deals-tabs-client";
 import { categories } from "@/lib/categories";
@@ -29,7 +30,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
         <DealsTabsClient categories={categories} />
       </Suspense>
 
-      <p className="result-summary">총 {total.toLocaleString("ko-KR")}개</p>
+      <p className="result-summary">총 {total.toLocaleString("ko-KR")}개 · 하락률순</p>
 
       {items.length ? (
         <section className="card-grid">
@@ -38,7 +39,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
           ))}
         </section>
       ) : (
-        <div className="empty-state"><p>아직 급락 특가가 없어요. 수집이 진행되면 이곳에 표시됩니다.</p></div>
+        <EmptyState>아직 급락 특가가 없어요. 수집이 진행되면 이곳에 표시됩니다.</EmptyState>
       )}
     </main>
   );

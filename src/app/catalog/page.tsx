@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import PriceCard from "@/components/PriceCard";
+import EmptyState from "@/components/ui/EmptyState";
 import { fetchCatalogPage, type CatalogSort } from "@/lib/catalog";
 import CatalogFiltersClient from "./catalog-filters-client";
 import { categories } from "@/lib/categories";
@@ -61,16 +62,22 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
           ))}
         </section>
       ) : (
-        <div className="empty-state">
-          <p>조건에 맞는 상품이 아직 없어요. 수집이 진행되면 이곳에 표시됩니다.</p>
-        </div>
+        <EmptyState>조건에 맞는 상품이 아직 없어요. 수집이 진행되면 이곳에 표시됩니다.</EmptyState>
       )}
 
       {totalPages > 1 ? (
         <nav className="pagination" aria-label="페이지 이동">
-          {page > 1 ? <Link href={{ pathname: "/catalog", query: { ...params, page: page - 1 } }}>이전</Link> : null}
+          {page > 1 ? (
+            <Link className="ui-button ui-button--outline ui-button--sm" href={{ pathname: "/catalog", query: { ...params, page: page - 1 } }}>
+              이전
+            </Link>
+          ) : null}
           <span>{page} / {totalPages}</span>
-          {page < totalPages ? <Link href={{ pathname: "/catalog", query: { ...params, page: page + 1 } }}>다음</Link> : null}
+          {page < totalPages ? (
+            <Link className="ui-button ui-button--outline ui-button--sm" href={{ pathname: "/catalog", query: { ...params, page: page + 1 } }}>
+              다음
+            </Link>
+          ) : null}
         </nav>
       ) : null}
     </main>

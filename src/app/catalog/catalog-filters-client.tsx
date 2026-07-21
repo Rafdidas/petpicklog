@@ -3,6 +3,8 @@
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Category } from "@/lib/categories";
+import Chip from "@/components/ui/Chip";
+import Button from "@/components/ui/Button";
 
 const petOptions = [
   { value: "", label: "전체" },
@@ -50,57 +52,53 @@ export default function CatalogFiltersClient({ categories }: { categories: Categ
   }
 
   return (
-    <div className="catalog-filters">
-      <form className="catalog-filters__search" onSubmit={handleSearchSubmit}>
+    <div className="filter-card">
+      <form className="filter-card__search" onSubmit={handleSearchSubmit}>
         <input
+          className="ui-input"
           value={queryInput}
           onChange={(event) => setQueryInput(event.target.value)}
           placeholder="상품명 검색"
           aria-label="카탈로그 검색"
         />
-        <button className="button button--ghost" type="submit">검색</button>
+        <Button type="submit" variant="dark">검색</Button>
       </form>
 
-      <div className="filter-strip" aria-label="카테고리 필터">
-        <button
-          className={currentCategory === "" ? "filter-strip__item filter-strip__item--active" : "filter-strip__item"}
-          type="button"
-          onClick={() => updateParam("category", "")}
-        >
+      <div className="filter-card__chips" aria-label="카테고리 필터">
+        <Chip active={currentCategory === ""} onClick={() => updateParam("category", "")}>
           전체
-        </button>
+        </Chip>
         {categories.map((category) => (
-          <button
-            className={currentCategory === category.slug ? "filter-strip__item filter-strip__item--active" : "filter-strip__item"}
+          <Chip
+            active={currentCategory === category.slug}
             key={category.slug}
-            type="button"
             onClick={() => updateParam("category", category.slug)}
           >
             {category.label}
-          </button>
+          </Chip>
         ))}
       </div>
 
-      <div className="catalog-filters__row">
-        <label>
+      <div className="filter-card__chips">
+        <label className="filter-card__field">
           반려동물
-          <select value={currentPet} onChange={(event) => updateParam("pet", event.target.value)}>
+          <select className="ui-input" value={currentPet} onChange={(event) => updateParam("pet", event.target.value)}>
             {petOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
         </label>
-        <label>
+        <label className="filter-card__field">
           정렬
-          <select value={currentSort} onChange={(event) => updateParam("sort", event.target.value)}>
+          <select className="ui-input" value={currentSort} onChange={(event) => updateParam("sort", event.target.value)}>
             {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
         </label>
-        <label>
+        <label className="filter-card__field">
           가격대
-          <select value={currentMaxPrice} onChange={(event) => updateParam("maxPrice", event.target.value)}>
+          <select className="ui-input" value={currentMaxPrice} onChange={(event) => updateParam("maxPrice", event.target.value)}>
             {maxPriceOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
