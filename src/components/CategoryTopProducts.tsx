@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import PriceCard from "@/components/PriceCard";
+import Chip from "@/components/ui/Chip";
 import type { Category } from "@/lib/categories";
 import type { CategoryTopMap } from "@/lib/catalog";
 
@@ -20,20 +21,17 @@ export default function CategoryTopProducts({ categories, productsByCategory }: 
     <div className="category-top">
       <div className="filter-strip" role="tablist" aria-label="카테고리별 인기상품">
         {categories.map((category) => (
-          <button
-            className={
-              selected === category.slug ? "filter-strip__item filter-strip__item--active" : "filter-strip__item"
-            }
+          <Chip
             key={category.slug}
             id={`category-top-tab-${category.slug}`}
-            type="button"
+            active={selected === category.slug}
             role="tab"
             aria-selected={selected === category.slug}
             aria-controls="category-top-panel"
             onClick={() => setSelected(category.slug)}
           >
             {category.label}
-          </button>
+          </Chip>
         ))}
       </div>
       {items.length ? (

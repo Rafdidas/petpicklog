@@ -69,12 +69,12 @@ export default function SaveButtonClient({ externalProductId, currentPrice }: { 
   }
 
   if (isSaved) {
-    return <Link className="button button--secondary" href="/saved">관심상품 보기</Link>;
+    return <Link className="ui-button ui-button--outline" href="/saved">관심상품 보기</Link>;
   }
 
   return (
     <>
-      <button className="button button--secondary" type="button" onClick={handleSave} disabled={isSaving}>
+      <button className="ui-button ui-button--outline" type="button" onClick={handleSave} disabled={isSaving}>
         {isSaving ? "저장 중" : "관심상품 저장"}
       </button>
       {notice ? <p className="notice notice--error">{notice}</p> : null}

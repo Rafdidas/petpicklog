@@ -46,29 +46,41 @@ export default function Header() {
 
   const loginHref = `/auth?redirect=${encodeURIComponent(pathname || "/catalog")}`;
 
+  const navItems = [
+    { href: "/catalog", label: "카탈로그" },
+    { href: "/deals", label: "급락 특가" },
+    { href: "/products", label: "실시간 검색" },
+    { href: "/hospitals", label: "동물병원" },
+    { href: "/guide", label: "가이드" },
+    { href: "/saved", label: "관심상품" }
+  ];
+
   return (
     <header className="header">
-      <div className="header--inner">
-        <Link className="header--inner__logo" href="/">
-          <span className="header--inner__logo-mark" aria-hidden="true">P</span>
+      <div className="header__inner">
+        <Link className="header__logo" href="/">
+          <span className="header__logo-mark" aria-hidden="true">P</span>
           <strong>펫픽</strong>
-          <small>가격추적</small>
+          <small>반려용품 가격추적</small>
         </Link>
-        <nav className="header--inner__nav" aria-label="주요 메뉴">
-          <Link className="header--inner__nav-primary" href="/catalog">카탈로그</Link>
-          <Link className="header--inner__nav-primary" href="/deals">급락 특가</Link>
-          <Link href="/products">실시간 검색</Link>
-          <Link href="/hospitals">동물병원</Link>
-          <Link href="/guide">가이드</Link>
-          <Link href="/saved">관심상품</Link>
-          {isReady && user ? (
-            <button className="header--inner__nav-button" type="button" onClick={handleSignOut}>
-              로그아웃
-            </button>
-          ) : (
-            <Link className="header--inner__auth-link--signup" href={loginHref}>
-              로그인
+        <nav className="header__nav" aria-label="주요 메뉴">
+          {navItems.map((item) => (
+            <Link
+              className={
+                pathname === item.href || pathname?.startsWith(`${item.href}/`)
+                  ? "header__nav-link header__nav-link--active"
+                  : "header__nav-link"
+              }
+              href={item.href}
+              key={item.href}
+            >
+              {item.label}
             </Link>
+          ))}
+          {isReady && user ? (
+            <button className="header__auth" type="button" onClick={handleSignOut}>로그아웃</button>
+          ) : (
+            <Link className="header__auth" href={loginHref}>로그인</Link>
           )}
         </nav>
       </div>

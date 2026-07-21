@@ -1,10 +1,14 @@
 ﻿@use "./styles/tokens";
 @use "./styles/typography";
 @use "./styles/base";
+@use "./styles/ui";
 @use "./styles/header";
+@use "./styles/footer";
 @use "./styles/catalog";
+@use "./styles/home";
 @use "./styles/products";
 @use "./styles/saved";
 @use "./styles/hospitals";
 @use "./styles/guide";
 @use "./styles/auth";
+@use "./styles/detail";

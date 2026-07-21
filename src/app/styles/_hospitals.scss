@@ -1,8 +1,28 @@
+.hospitals-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.hospitals-page__search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  label {
+    display: none;
+  }
+
+  input {
+    flex: 1;
+  }
+}
+
 .hospital-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 8px;
 }
 
 .hospital-item {
@@ -11,8 +31,9 @@
   align-items: flex-start;
   gap: 20px;
   padding: 20px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 
   &__meta {
     display: flex;
@@ -46,5 +67,28 @@
     margin-top: 6px;
     font-size: 12px;
     font-weight: 700;
+    color: var(--color-accent-deep);
+  }
+}
+
+.source-note {
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--color-surface);
+  border-radius: var(--radius-card-lg);
+  box-shadow: var(--shadow-card);
+
+  h2 {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-muted);
+    line-height: 1.6;
   }
 }

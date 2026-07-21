@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { formatCheckedAt, formatPrice } from "@/lib/format";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import StatTile from "@/components/ui/StatTile";
 
 type SavedProductRow = {
   id: string;
@@ -396,33 +400,28 @@ export default function SavedProductsClient() {
       </section>
 
       {!message ? (
-        <section className="metric-grid" aria-label="관심상품 가격 요약">
-          <article>
-            <span>관심상품</span>
-            <strong>{items.length}개</strong>
-          </article>
-          <article>
-            <span>가격 하락</span>
-            <strong>{summary.down}개</strong>
-          </article>
-          <article>
-            <span>가격 상승</span>
-            <strong>{summary.up}개</strong>
-          </article>
-          <article>
-            <span>최근 확인</span>
-            <strong>{summary.latestCheckedAt ? formatCheckedAt(new Date(summary.latestCheckedAt).toISOString()) : "확인 전"}</strong>
-          </article>
+        <section className="detail-stat-grid" aria-label="관심상품 가격 요약">
+          <StatTile boxed label="관심상품" value={`${items.length}개`} />
+          <StatTile boxed label="가격 하락" value={`${summary.down}개`} />
+          <StatTile boxed label="가격 상승" value={`${summary.up}개`} />
+          <StatTile
+            boxed
+            label="최근 확인"
+            value={summary.latestCheckedAt ? formatCheckedAt(new Date(summary.latestCheckedAt).toISOString()) : "확인 전"}
+          />
         </section>
       ) : null}
 
       {message ? (
-        <div className="empty-state">
-          <p>{message}</p>
-          <Link className="button button--primary" href={message.includes("로그인") ? "/auth?redirect=/saved" : "/products"}>
-            {message.includes("로그인") ? "로그인하기" : "가격 확인하기"}
-          </Link>
-        </div>
+        <EmptyState
+          action={
+            <Button href={message.includes("로그인") ? "/auth?redirect=/saved" : "/products"} variant="primary">
+              {message.includes("로그인") ? "로그인하기" : "가격 확인하기"}
+            </Button>
+          }
+        >
+          {message}
+        </EmptyState>
       ) : null}
       {notice ? <p className="notice notice--error">{notice}</p> : null}
 
@@ -437,25 +436,37 @@ export default function SavedProductsClient() {
           const priceDiff = currentPrice !== null && savedPrice !== null ? currentPrice - savedPrice : null;
 
           return (
-            <article className="saved-item" key={item.id}>
-              {product.image_url ? <Image src={product.image_url} alt="" width={180} height={135} /> : <div className="saved-item__image" />}
-              <div className="saved-item__content">
-                <span>{product.mall_name ?? "쇼핑몰 확인 필요"} · {getSourceLabel(product.source)}</span>
-                <h2>{product.title}</h2>
-                <p>현재 {formatPrice(product.latest_price)}</p>
-                <div className="saved-item__meta">
-                  <small>저장 당시 {formatPrice(item.saved_price)}</small>
+            <article className="saved-card" key={item.id}>
+              <div className="saved-card__media">
+                {product.image_url ? (
+                  <Image src={product.image_url} alt="" width={180} height={135} />
+                ) : (
+                  <span>이미지</span>
+                )}
+              </div>
+              <div className="saved-card__body">
+                <span className="saved-card__source">
+                  {product.mall_name ?? "쇼핑몰 확인 필요"} · {getSourceLabel(product.source)}
+                </span>
+                <Link className="saved-card__title" href={`/products/${product.id}`}>
+                  {product.title}
+                </Link>
+                <div className="saved-card__price-row">
+                  <strong>{formatPrice(product.latest_price)}</strong>
                   {priceDiff !== null ? (
-                    <strong className={priceDiff <= 0 ? "saved-item__diff saved-item__diff--down" : "saved-item__diff saved-item__diff--up"}>
-                      {getDiffLabel(priceDiff)}
-                    </strong>
+                    priceDiff <= 0 ? (
+                      <Badge variant="state">{getDiffLabel(priceDiff) || "가격 변동 없음"}</Badge>
+                    ) : (
+                      <span className="ui-badge ui-badge--up">{getDiffLabel(priceDiff)}</span>
+                    )
                   ) : null}
                   <small>마지막 확인 {formatCheckedAt(product.last_synced_at)}</small>
                 </div>
-                <label className="saved-item__status" htmlFor={`status-${item.id}`}>
+                <label className="saved-card__status" htmlFor={`status-${item.id}`}>
                   상태
                   <select
                     id={`status-${item.id}`}
+                    className="ui-input"
                     value={item.status}
                     onChange={(event) => handleStatusChange(item.id, event.target.value)}
                     disabled={pendingId === item.id}
@@ -468,75 +479,80 @@ export default function SavedProductsClient() {
                   </select>
                 </label>
               </div>
-              <div className="saved-item__actions">
-                <button className="button button--ghost" type="button" onClick={() => handleRefreshPrice(item)} disabled={pendingId === item.id}>
+              <div className="saved-card__actions">
+                <Button variant="outline" size="sm" onClick={() => handleToggleHistory(item)}>
+                  {expandedHistoryId === item.id ? "가격 기록 닫기" : "가격 기록 보기"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleRefreshPrice(item)} disabled={pendingId === item.id}>
                   {pendingId === item.id ? "확인 중" : "현재 가격 확인"}
-                </button>
-                <Link className="button button--secondary" href={`/products/${product.id}`}>
-                  상세 보기
-                </Link>
-                <button className="button button--secondary" type="button" onClick={() => handleToggleHistory(item)}>
-                  {expandedHistoryId === item.id ? "가격 기록 닫기" : "최근 가격 기록"}
-                </button>
-                <a className="button button--secondary" href={product.product_url} target="_blank" rel="noreferrer">
+                </Button>
+                <Button variant="primary" size="sm" href={product.product_url} external>
                   구매하러 가기
-                </a>
-                <button className="button button--secondary" type="button" onClick={() => openReviewForm(item.id)}>
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => openReviewForm(item.id)}>
                   후기 작성
-                </button>
-                <button className="button button--danger" type="button" onClick={() => handleDelete(item.id)} disabled={pendingId === item.id}>
+                </Button>
+                <Button variant="danger-text" size="sm" onClick={() => handleDelete(item.id)} disabled={pendingId === item.id}>
                   관심상품 해제
-                </button>
+                </Button>
               </div>
               {reviewingId === item.id ? (
-                <form
-                  className="review-form"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    handleSubmitReview(item);
-                  }}
-                >
-                  <label>
-                    별점
-                    <select value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>
-                      <option value="5">5점</option>
-                      <option value="4">4점</option>
-                      <option value="3">3점</option>
-                      <option value="2">2점</option>
-                      <option value="1">1점</option>
-                    </select>
-                  </label>
-                  <label>
-                    재구매 의사
-                    <select value={repurchaseIntent} onChange={(event) => setRepurchaseIntent(event.target.value)}>
-                      <option value="true">있음</option>
-                      <option value="false">없음</option>
-                    </select>
-                  </label>
-                  <label className="review-form__content">
-                    후기
-                    <textarea value={reviewContent} onChange={(event) => setReviewContent(event.target.value)} rows={4} placeholder="써보니 어땠나요?" />
-                  </label>
-                  <div className="review-form__actions">
-                    <button className="button button--primary" type="submit" disabled={pendingId === item.id}>
-                      저장
-                    </button>
-                    <button className="button button--secondary" type="button" onClick={() => setReviewingId("")}>
-                      취소
-                    </button>
-                  </div>
-                </form>
+                <div className="review-card">
+                  <form
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      handleSubmitReview(item);
+                    }}
+                  >
+                    <div className="review-card__row">
+                      <label>
+                        별점
+                        <select className="ui-input" value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>
+                          <option value="5">5점</option>
+                          <option value="4">4점</option>
+                          <option value="3">3점</option>
+                          <option value="2">2점</option>
+                          <option value="1">1점</option>
+                        </select>
+                      </label>
+                      <label>
+                        재구매 의사
+                        <select className="ui-input" value={repurchaseIntent} onChange={(event) => setRepurchaseIntent(event.target.value)}>
+                          <option value="true">있음</option>
+                          <option value="false">없음</option>
+                        </select>
+                      </label>
+                    </div>
+                    <label className="review-card__content">
+                      후기
+                      <textarea
+                        className="ui-input"
+                        value={reviewContent}
+                        onChange={(event) => setReviewContent(event.target.value)}
+                        rows={4}
+                        placeholder="써보니 어땠나요?"
+                      />
+                    </label>
+                    <div className="review-card__actions">
+                      <Button type="submit" variant="dark" disabled={pendingId === item.id}>
+                        {pendingId === item.id ? "저장 중" : "저장"}
+                      </Button>
+                      <Button type="button" variant="outline" onClick={() => setReviewingId("")}>
+                        취소
+                      </Button>
+                    </div>
+                  </form>
+                </div>
               ) : null}
               {expandedHistoryId === item.id ? (
-                <div className="saved-history">
-                  <strong>최근 가격 기록</strong>
+                <div className="history-card">
                   {(historyByProductId[item.external_product_id ?? ""] ?? []).length ? (
                     (historyByProductId[item.external_product_id ?? ""] ?? []).map((history) => (
-                      <div key={history.id}>
-                        <span>{history.mall_name || "쇼핑몰 확인 필요"}</span>
+                      <article className="history-card__row" key={history.id}>
                         <strong>{formatPrice(history.price)}</strong>
+                        <span>{history.mall_name || "쇼핑몰 확인 필요"}</span>
                         <small>{formatCheckedAt(history.checked_at)}</small>
-                      </div>
+                      </article>
                     ))
                   ) : (
                     <p>아직 가격 기록이 없습니다.</p>

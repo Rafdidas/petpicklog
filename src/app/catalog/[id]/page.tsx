@@ -5,6 +5,10 @@ import { notFound } from "next/navigation";
 import { fetchPriceHistory, fetchProductStats } from "@/lib/catalog";
 import { formatCheckedAt, formatPrice } from "@/lib/format";
 import { formatDropLabel, isNearAllTimeLow } from "@/lib/price-stats";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import SectionHeading from "@/components/ui/SectionHeading";
 import PriceChart from "./price-chart";
 import SaveButtonClient from "./save-button-client";
 
@@ -52,51 +56,44 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
   };
 
   return (
-    <main className="catalog-detail-page">
+    <main className="detail-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
-      <section className="catalog-detail">
-        {stats.imageUrl ? (
-          <Image src={stats.imageUrl} alt="" width={480} height={360} />
-        ) : (
-          <div className="catalog-detail__image" />
-        )}
-        <div className="catalog-detail__content">
-          <p className="section-label">{stats.mallName ?? "쇼핑몰 확인 필요"}</p>
+      <section className="detail-card">
+        <div className="detail-card__media">
+          {stats.imageUrl ? <Image src={stats.imageUrl} alt="" width={480} height={360} /> : <span>상품 이미지</span>}
+        </div>
+        <div className="detail-card__body">
+          <p className="detail-card__source">{stats.mallName ?? "쇼핑몰 확인 필요"}</p>
           <h1>{stats.title}</h1>
-          <div className="catalog-detail__price-row">
+          <div className="detail-card__price">
             <strong>{formatPrice(stats.currentPrice)}</strong>
-            {dropLabel ? <em className="catalog-detail__drop">{dropLabel}</em> : null}
+            {dropLabel ? <Badge variant="drop">{dropLabel}</Badge> : null}
           </div>
-          <dl className="detail-list">
+          <dl className="detail-meta">
             <div><dt>14일 최고가</dt><dd>{formatPrice(stats.maxPrice14d)}</dd></div>
             <div>
               <dt>역대 최저가</dt>
               <dd>
                 {formatPrice(stats.minPriceAll)}
-                {nearAllTimeLow ? <span className="badge badge--highlight">최저가 근접</span> : null}
+                {nearAllTimeLow ? <Badge variant="state">최저가 근접</Badge> : null}
               </dd>
             </div>
-            <div><dt>마지막 확인</dt><dd>{formatCheckedAt(stats.lastCheckedAt)}</dd></div>
+            <div><dt>마지막 가격 확인</dt><dd>{formatCheckedAt(stats.lastCheckedAt)}</dd></div>
           </dl>
-          <div className="catalog-detail__actions">
-            <a className="button button--primary" href={stats.productUrl} target="_blank" rel="noreferrer">구매하러 가기</a>
+          <div className="detail-card__actions">
             <SaveButtonClient externalProductId={stats.externalProductId} currentPrice={stats.currentPrice} />
+            <Button href={stats.productUrl} external variant="primary">구매하러 가기</Button>
           </div>
-          <p className="product-detail__notice">표시된 가격은 최근 수집된 가격이며, 실제 구매 가격은 쇼핑몰에서 달라질 수 있습니다.</p>
+          <p className="detail-card__notice">표시된 가격은 최근 확인된 가격이며, 실제 구매 가격은 쇼핑몰에서 달라질 수 있습니다.</p>
         </div>
       </section>
 
       <section className="detail-section">
-        <div className="dashboard-section__heading">
-          <div>
-            <p className="section-label">가격 추이</p>
-            <h2>최근 가격 기록</h2>
-          </div>
-        </div>
+        <SectionHeading eyebrow="가격 기록" title="최근 확인된 가격 기록" />
         {history.length >= 2 ? (
-          <PriceChart points={history} />
+          <div className="detail-chart-card"><PriceChart points={history} /></div>
         ) : (
-          <div className="empty-state"><p>가격 기록이 더 쌓이면 추이 차트가 표시됩니다.</p></div>
+          <EmptyState>가격 기록이 더 쌓이면 추이 차트가 표시됩니다.</EmptyState>
         )}
       </section>
     </main>

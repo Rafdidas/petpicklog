@@ -3,6 +3,9 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import Button from "@/components/ui/Button";
+import Chip from "@/components/ui/Chip";
+import EmptyState from "@/components/ui/EmptyState";
 
 type HospitalRow = {
   id: string;
@@ -110,48 +113,39 @@ export default function HospitalsClient() {
         <p className="page-heading__copy">공공데이터 기반으로 병원명과 주소를 검색합니다. 방문 전 운영 여부와 진료 가능 여부는 병원에 직접 확인해주세요.</p>
       </section>
 
-      <form className="search-bar" onSubmit={handleSearch}>
+      <form className="hospitals-page__search" onSubmit={handleSearch}>
         <label htmlFor="hospital-keyword">검색어</label>
         <input
+          className="ui-input"
           id="hospital-keyword"
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
           placeholder="병원명, 주소, 시군구"
         />
-        <button className="button button--primary" type="submit" disabled={isLoading}>
+        <Button type="submit" variant="primary" disabled={isLoading}>
           {isLoading ? "검색 중" : "검색"}
-        </button>
+        </Button>
       </form>
 
       {!message ? <p className="result-summary">현재 조건으로 {hospitals.length}개 병원을 표시 중입니다.</p> : null}
 
-      <section className="filter-strip" aria-label="지역 필터">
+      <div className="filter-strip" aria-label="지역 필터">
         {["전체", ...regions].map((region) => (
-          <button
-            className={region === selectedRegion ? "filter-strip__item filter-strip__item--active" : "filter-strip__item"}
-            key={region}
-            type="button"
-            onClick={() => handleRegionChange(region)}
-          >
+          <Chip key={region} active={region === selectedRegion} onClick={() => handleRegionChange(region)}>
             {region}
-          </button>
+          </Chip>
         ))}
-      </section>
+      </div>
 
-      <section className="filter-strip" aria-label="시군구 필터">
+      <div className="filter-strip" aria-label="시군구 필터">
         {["전체", ...districts].map((district) => (
-          <button
-            className={district === selectedDistrict ? "filter-strip__item filter-strip__item--active" : "filter-strip__item"}
-            key={district}
-            type="button"
-            onClick={() => handleDistrictChange(district)}
-          >
+          <Chip key={district} active={district === selectedDistrict} onClick={() => handleDistrictChange(district)}>
             {district}
-          </button>
+          </Chip>
         ))}
-      </section>
+      </div>
 
-      {message ? <div className="empty-state"><p>{message}</p></div> : null}
+      {message ? <EmptyState>{message}</EmptyState> : null}
 
       <section className="hospital-list">
         {hospitals.map((hospital) => {
@@ -170,9 +164,9 @@ export default function HospitalsClient() {
                 <p><small>지번</small> {hospital.lot_address || "주소 확인 필요"}</p>
                 {hospital.phone ? <a className="hospital-item__phone" href={`tel:${hospital.phone}`}>{hospital.phone}</a> : <small>전화번호 확인 필요</small>}
               </div>
-              <a className="button button--secondary" href={getNaverMapSearchUrl(`${hospital.name} ${address}`)} target="_blank" rel="noreferrer">
+              <Button href={getNaverMapSearchUrl(`${hospital.name} ${address}`)} external variant="outline" size="sm">
                 네이버 지도
-              </a>
+              </Button>
             </article>
           );
         })}
