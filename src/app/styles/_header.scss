@@ -8,7 +8,7 @@
 
   &__inner {
     position: relative;
-    max-width: 1200px;
+    max-width: var(--content-max);
     margin: 0 auto;
     padding: 0 24px;
     height: 64px;
