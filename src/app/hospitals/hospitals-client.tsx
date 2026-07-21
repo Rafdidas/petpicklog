@@ -6,6 +6,9 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import EmptyState from "@/components/ui/EmptyState";
+import Pagination from "@/components/ui/Pagination";
+
+const PAGE_SIZE = 12;
 
 type HospitalRow = {
   id: string;
@@ -31,6 +34,7 @@ export default function HospitalsClient() {
   const [keyword, setKeyword] = useState(() => searchParams.get("query") ?? "");
   const [message, setMessage] = useState("동물병원 데이터를 불러오는 중입니다.");
   const [isLoading, setIsLoading] = useState(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     loadHospitals("전체", "전체", searchParams.get("query") ?? "");
@@ -77,6 +81,7 @@ export default function HospitalsClient() {
 
     const rows = (data ?? []) as HospitalRow[];
     setHospitals(rows);
+    setPage(1);
     setMessage(rows.length ? "" : "동물병원 데이터가 아직 없습니다. 공공데이터를 animal_hospitals 테이블에 적재하면 이 화면에 표시됩니다.");
 
     if (regions.length === 0) {
@@ -148,7 +153,7 @@ export default function HospitalsClient() {
       {message ? <EmptyState>{message}</EmptyState> : null}
 
       <section className="hospital-list">
-        {hospitals.map((hospital) => {
+        {hospitals.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((hospital) => {
           const address = hospital.road_address || hospital.lot_address || "";
           return (
             <article className="hospital-item" key={hospital.id}>
@@ -171,6 +176,17 @@ export default function HospitalsClient() {
           );
         })}
       </section>
+
+      <Pagination
+        page={page}
+        totalPages={Math.max(1, Math.ceil(hospitals.length / PAGE_SIZE))}
+        onChange={(next) => {
+          setPage(next);
+          if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        }}
+      />
 
       <section className="source-note">
         <h2>동물병원 정보 안내</h2>

@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import PriceCard from "@/components/PriceCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { fetchCatalogPage } from "@/lib/catalog";
 import DealsTabsClient from "./deals-tabs-client";
+import DealsListClient from "./deals-list-client";
 import { categories } from "@/lib/categories";
 
 export const revalidate = 3600;
@@ -33,11 +33,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
       <p className="result-summary">총 {total.toLocaleString("ko-KR")}개 · 하락률순</p>
 
       {items.length ? (
-        <section className="card-grid">
-          {items.map((stats) => (
-            <PriceCard stats={stats} key={stats.externalProductId} />
-          ))}
-        </section>
+        <DealsListClient items={items} />
       ) : (
         <EmptyState>아직 급락 특가가 없어요. 수집이 진행되면 이곳에 표시됩니다.</EmptyState>
       )}

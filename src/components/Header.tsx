@@ -12,6 +12,14 @@ export default function Header() {
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
   const [user, setUser] = useState<User | null>(null);
   const [isReady, setIsReady] = useState(() => !supabase);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
+  // Close the mobile menu whenever the route changes.
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setMenuOpen(false);
+  }
 
   useEffect(() => {
     if (!supabase) {
@@ -63,7 +71,20 @@ export default function Header() {
           <strong>펫픽</strong>
           <small>반려용품 가격추적</small>
         </Link>
-        <nav className="header__nav" aria-label="주요 메뉴">
+        <button
+          className="header__toggle"
+          type="button"
+          aria-label="메뉴 열기"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((open) => !open)}
+        >
+          <span className={menuOpen ? "header__toggle-icon header__toggle-icon--open" : "header__toggle-icon"} aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
+        <nav className={menuOpen ? "header__nav header__nav--open" : "header__nav"} aria-label="주요 메뉴">
           {navItems.map((item) => (
             <Link
               className={
