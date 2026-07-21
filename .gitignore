@@ -5,3 +5,7 @@ dist/
 .env
 .env*.local
 *.tsbuildinfo
+
+# 개발/빌드 부산물
+*.log
+nul
