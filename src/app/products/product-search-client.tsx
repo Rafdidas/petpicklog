@@ -4,6 +4,9 @@ import { FormEvent, useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Button from "@/components/ui/Button";
+import Chip from "@/components/ui/Chip";
+import EmptyState from "@/components/ui/EmptyState";
 import { formatCheckedAt, formatPrice } from "@/lib/format";
 import { buildPetShoppingQuery } from "@/lib/pet-search";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
@@ -237,86 +240,89 @@ export default function ProductSearchClient({
         <p className="page-heading__copy">카탈로그에 없는 상품은 이곳에서 실시간으로 검색할 수 있어요. 매일 자동으로 가격을 추적하는 상품은 <Link href="/catalog">카탈로그</Link>에서 확인하세요.</p>
       </section>
 
-      <form className="search-bar" onSubmit={handleSearch}>
-        <label htmlFor="product-query">검색어</label>
-        <input id="product-query" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="사료, 간식, 배변패드" />
-        <button className="button button--primary" type="submit" disabled={isLoading}>
-          {isLoading ? "검색 중" : "검색"}
-        </button>
-      </form>
-
-      <section className="pet-search-panel" aria-label="반려동물 검색 범위">
-        <div className="pet-filter">
+      <div className="search-card">
+        <form className="search-card__row" onSubmit={handleSearch}>
+          <input
+            className="ui-input"
+            id="product-query"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="사료, 간식, 배변패드"
+            aria-label="검색어"
+          />
+          <Button type="submit" variant="primary" disabled={isLoading}>
+            {isLoading ? "검색 중" : "검색"}
+          </Button>
+        </form>
+        <div className="search-card__pets">
           {petOptions.map((option) => (
-            <button
-              className={petType === option.value ? "pet-filter__item pet-filter__item--active" : "pet-filter__item"}
-              key={option.value}
-              type="button"
-              onClick={() => setPetType(option.value)}
-            >
+            <Chip key={option.value} active={petType === option.value} onClick={() => setPetType(option.value)}>
               {option.label}
+            </Chip>
+          ))}
+          <span className="search-card__effective">
+            실제 검색어: <strong>{query.trim() ? buildPetShoppingQuery(query, { petType, customPet }) : "검색어 입력 전"}</strong>
+          </span>
+        </div>
+        {petType === "custom" ? (
+          <label className="search-card__custom" htmlFor="custom-pet">
+            반려동물 직접입력
+            <input
+              className="ui-input"
+              id="custom-pet"
+              value={customPet}
+              onChange={(event) => setCustomPet(event.target.value)}
+              placeholder="예: 앵무새, 거북이, 햄스터"
+            />
+          </label>
+        ) : null}
+        <div className="search-card__quick">
+          {recommendedQueries.map((item) => (
+            <button
+              className="search-card__quick-item"
+              type="button"
+              key={item}
+              onClick={() => {
+                setQuery(item);
+                searchProducts(item, petType, customPet);
+              }}
+            >
+              {item}
             </button>
           ))}
         </div>
-        {petType === "custom" ? (
-          <label className="pet-custom-input" htmlFor="custom-pet">
-            반려동물 직접입력
-            <input id="custom-pet" value={customPet} onChange={(event) => setCustomPet(event.target.value)} placeholder="예: 앵무새, 거북이, 햄스터" />
-          </label>
-        ) : null}
-        <p>
-          실제 검색어: <strong>{query.trim() ? buildPetShoppingQuery(query, { petType, customPet }) : "검색어 입력 전"}</strong>
-        </p>
-      </section>
-
-      <section className="quick-links" aria-label="추천 검색어">
-        {recommendedQueries.map((item) => (
-          <button
-            className="quick-links__item"
-            type="button"
-            key={item}
-            onClick={() => {
-              setQuery(item);
-              searchProducts(item, petType, customPet);
-            }}
-          >
-            {item}
-          </button>
-        ))}
-      </section>
+      </div>
 
       {errorMessage ? <p className="notice notice--error">{errorMessage}</p> : null}
       {successMessage ? <p className="notice notice--success">{successMessage}</p> : null}
       {!query.trim() && !products.length ? (
-        <div className="empty-state">
-          <p>검색어를 입력해 반려동물 용품 가격을 확인해보세요.</p>
-        </div>
+        <EmptyState title="검색어를 입력해 보세요">반려동물 용품의 실시간 가격을 확인해드려요.</EmptyState>
       ) : null}
 
       <section className="product-grid" aria-live="polite">
         {products.map((product) => (
           <article className="product-card" key={`${product.source}-${product.externalId}`}>
             <Image src={product.imageUrl} alt="" width={600} height={450} />
+            <div className="product-card--meta">
+              <span>{product.mallName}</span>
+              <em>{getSourceLabel(product.source)}</em>
+            </div>
+            <h2>{product.title}</h2>
             <div className="product-card--body">
-              <div className="product-card--meta">
-                <span>{product.mallName}</span>
-                <em>{getSourceLabel(product.source)}</em>
-              </div>
-              <h2>{product.title}</h2>
               <p>{formatPrice(product.latestPrice)}</p>
               <small>{product.category || "카테고리 확인 필요"}</small>
               <small>마지막 확인: {formatCheckedAt(product.lastSyncedAt)}</small>
-              <div className="product-card--actions">
-                <button className="button button--secondary" type="button" onClick={() => handleSave(product)} disabled={savingId === product.externalId}>
-                  {savingId === product.externalId ? "저장 중" : "관심상품 저장"}
-                </button>
-                <button className="button button--ghost" type="button" onClick={() => handleOpenDetail(product)} disabled={savingId === product.externalId}>
-                  상세 보기
-                </button>
-                <a className="button button--ghost" href={product.productUrl} target="_blank" rel="noreferrer">
-                  구매하러 가기
-                </a>
-              </div>
+            </div>
+            <div className="product-card--actions">
+              <Button variant="outline" size="sm" onClick={() => handleSave(product)} disabled={savingId === product.externalId}>
+                {savingId === product.externalId ? "저장 중" : "관심상품 저장"}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => handleOpenDetail(product)} disabled={savingId === product.externalId}>
+                상세 보기
+              </Button>
+              <Button variant="primary" size="sm" href={product.productUrl} external>
+                구매하러 가기
+              </Button>
             </div>
           </article>
         ))}
