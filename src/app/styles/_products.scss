@@ -129,19 +129,3 @@
   }
 }
 
-.notice {
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
-  font-size: 13px;
-  margin: 0 0 16px;
-
-  &--error {
-    background: #fdf1ec;
-    color: var(--color-danger);
-  }
-
-  &--success {
-    background: var(--color-accent-soft);
-    color: var(--color-accent-deep);
-  }
-}
