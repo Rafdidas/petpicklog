@@ -109,55 +109,8 @@ main {
   }
 }
 
-.metric-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  margin: 24px 0;
-  border: 1px solid var(--color-border);
-  background: var(--color-border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-
-  article {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 16px;
-    background: var(--color-surface);
-
-    span {
-      font-size: 11px;
-      color: var(--color-muted);
-    }
-
-    strong {
-      font-size: 18px;
-      font-weight: 700;
-    }
-  }
-
-  @media (max-width: 640px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 .result-summary {
   margin: 0 0 16px;
   color: var(--color-muted);
   font-size: 13px;
-}
-
-.badge {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-weight: 700;
-
-  &--highlight {
-    background: var(--color-accent);
-    color: var(--color-accent-ink);
-  }
 }
