@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { formatCheckedAt, formatPrice } from "@/lib/format";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import SectionHeading from "@/components/ui/SectionHeading";
+import StatTile from "@/components/ui/StatTile";
 
 type ExternalProductRow = {
   id: string;
@@ -202,13 +205,16 @@ export default function ProductDetailClient({ productId }: { productId: string }
 
   if (message) {
     return (
-      <main className="product-detail-page">
-        <div className="empty-state">
-          <p>{message}</p>
-          <Link className="button button--primary" href="/products">
-            가격 확인하기
-          </Link>
-        </div>
+      <main className="detail-page">
+        <EmptyState
+          action={
+            <Button href="/products" variant="primary">
+              가격 확인하기
+            </Button>
+          }
+        >
+          {message}
+        </EmptyState>
       </main>
     );
   }
@@ -218,14 +224,18 @@ export default function ProductDetailClient({ productId }: { productId: string }
   }
 
   return (
-    <main className="product-detail-page">
-      <section className="product-detail">
-        {product.image_url ? <Image src={product.image_url} alt="" width={520} height={390} /> : <div className="product-detail__image" />}
-        <div className="product-detail__content">
-          <p className="section-label">{getSourceLabel(product.source)}</p>
+    <main className="detail-page">
+      <section className="detail-card">
+        <div className="detail-card__media">
+          {product.image_url ? <Image src={product.image_url} alt="" width={480} height={360} /> : <span>상품 이미지</span>}
+        </div>
+        <div className="detail-card__body">
+          <p className="detail-card__source">{getSourceLabel(product.source)}</p>
           <h1>{product.title}</h1>
-          <p className="product-detail__price">{formatPrice(product.latest_price)}</p>
-          <dl className="detail-list">
+          <div className="detail-card__price">
+            <strong>{formatPrice(product.latest_price)}</strong>
+          </div>
+          <dl className="detail-meta">
             <div>
               <dt>카테고리</dt>
               <dd>{product.category || "카테고리 확인 필요"}</dd>
@@ -239,119 +249,102 @@ export default function ProductDetailClient({ productId }: { productId: string }
               <dd>{formatCheckedAt(product.last_synced_at)}</dd>
             </div>
           </dl>
-          <div className="product-detail__actions">
+          <div className="detail-card__actions">
             {isSaved ? (
-              <Link className="button button--secondary" href="/saved">관심상품 보기</Link>
+              <Button href="/saved" variant="outline">관심상품 보기</Button>
             ) : (
-              <button className="button button--secondary" type="button" onClick={handleSaveProduct} disabled={isSaving}>
+              <Button type="button" variant="outline" onClick={handleSaveProduct} disabled={isSaving}>
                 {isSaving ? "저장 중" : "관심상품 저장"}
-              </button>
+              </Button>
             )}
-            <a className="button button--primary" href={product.product_url} target="_blank" rel="noreferrer">
-              구매하러 가기
-            </a>
+            <Button href={product.product_url} external variant="primary">구매하러 가기</Button>
           </div>
-          <p className="product-detail__notice">표시된 가격은 최근 확인된 가격이며, 실제 구매 가격은 쇼핑몰에서 달라질 수 있습니다.</p>
+          <p className="detail-card__notice">표시된 가격은 최근 확인된 가격이며, 실제 구매 가격은 쇼핑몰에서 달라질 수 있습니다.</p>
         </div>
       </section>
 
       <section className="detail-section">
-        <div className="dashboard-section__heading">
-          <div>
-            <p className="section-label">가격 기록</p>
-            <h2>최근 확인된 가격 기록</h2>
-          </div>
-        </div>
-        <div className="history-list">
-          {histories.length ? (
-            histories.map((history) => (
-              <article className="history-item" key={history.id}>
-                <div>
-                  <strong>{formatPrice(history.price)}</strong>
-                  <span>{history.mall_name || getSourceLabel(history.source)}</span>
-                </div>
+        <SectionHeading eyebrow="가격 기록" title="최근 확인된 가격 기록" />
+        {histories.length ? (
+          <div className="history-card">
+            {histories.map((history) => (
+              <article className="history-card__row" key={history.id}>
+                <strong>{formatPrice(history.price)}</strong>
+                <span>{history.mall_name || getSourceLabel(history.source)}</span>
                 <small>{formatCheckedAt(history.checked_at)}</small>
                 <a href={history.product_url} target="_blank" rel="noreferrer">
                   상품 링크
                 </a>
               </article>
-            ))
-          ) : (
-            <div className="empty-state">
-              <p>아직 가격 기록이 없습니다.</p>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState>아직 가격 기록이 없습니다.</EmptyState>
+        )}
       </section>
 
       <section className="detail-section">
-        <div className="dashboard-section__heading">
-          <div>
-            <p className="section-label">후기</p>
-            <h2>저장 상품과 연결된 후기</h2>
-          </div>
+        <SectionHeading eyebrow="후기" title="저장 상품과 연결된 후기" />
+        <div className="detail-stat-grid">
+          <StatTile boxed label="후기" value={`${reviews.length}개`} />
+          <StatTile boxed label="평균 별점" value={averageRating ? averageRating.toFixed(1) : "없음"} />
+          <StatTile boxed label="재구매 의사" value={reviews.length ? `${repurchaseRate}%` : "없음"} />
+          <StatTile
+            boxed
+            label="내 후기"
+            value={currentUserId && reviews.some((review) => review.user_id === currentUserId) ? "작성함" : "작성 전"}
+          />
         </div>
-        <section className="metric-grid" aria-label="후기 요약">
-          <article>
-            <span>후기</span>
-            <strong>{reviews.length}개</strong>
-          </article>
-          <article>
-            <span>평균 별점</span>
-            <strong>{averageRating ? averageRating.toFixed(1) : "없음"}</strong>
-          </article>
-          <article>
-            <span>재구매 의사</span>
-            <strong>{reviews.length ? `${repurchaseRate}%` : "없음"}</strong>
-          </article>
-          <article>
-            <span>내 후기</span>
-            <strong>{currentUserId && reviews.some((review) => review.user_id === currentUserId) ? "작성함" : "작성 전"}</strong>
-          </article>
-        </section>
 
-        <form className="review-form review-form--detail" onSubmit={handleSubmitReview}>
-          <label>
-            별점
-            <select value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>
-              <option value="5">5점</option>
-              <option value="4">4점</option>
-              <option value="3">3점</option>
-              <option value="2">2점</option>
-              <option value="1">1점</option>
-            </select>
-          </label>
-          <label>
-            재구매 의사
-            <select value={repurchaseIntent} onChange={(event) => setRepurchaseIntent(event.target.value)}>
-              <option value="true">있음</option>
-              <option value="false">없음</option>
-            </select>
-          </label>
-          <label className="review-form__content">
-            후기
-            <textarea value={reviewContent} onChange={(event) => setReviewContent(event.target.value)} rows={4} placeholder="써보니 어땠나요?" />
-          </label>
-          <div className="review-form__actions">
-            <button className="button button--primary" type="submit" disabled={isSubmitting}>
+        <div className="review-card">
+          <form onSubmit={handleSubmitReview}>
+            <div className="review-card__row">
+              <label>
+                별점
+                <select className="ui-input" value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>
+                  <option value="5">5점</option>
+                  <option value="4">4점</option>
+                  <option value="3">3점</option>
+                  <option value="2">2점</option>
+                  <option value="1">1점</option>
+                </select>
+              </label>
+              <label>
+                재구매 의사
+                <select className="ui-input" value={repurchaseIntent} onChange={(event) => setRepurchaseIntent(event.target.value)}>
+                  <option value="true">있음</option>
+                  <option value="false">없음</option>
+                </select>
+              </label>
+            </div>
+            <label className="review-card__content">
+              후기
+              <textarea
+                className="ui-input"
+                value={reviewContent}
+                onChange={(event) => setReviewContent(event.target.value)}
+                placeholder="써보니 어땠나요?"
+              />
+            </label>
+            <Button type="submit" variant="dark" disabled={isSubmitting}>
               {isSubmitting ? "저장 중" : "후기 저장"}
-            </button>
-          </div>
-        </form>
-        {notice ? <p className="notice notice--error">{notice}</p> : null}
+            </Button>
+          </form>
+          {notice ? <p className="notice notice--error">{notice}</p> : null}
+        </div>
 
-        <div className="review-list">
-          {reviews.map((review) => (
-            <article className="review-item" key={review.id}>
-              <div>
+        {reviews.length ? (
+          <div className="review-card">
+            {reviews.map((review) => (
+              <article className="review-card__item" key={review.id}>
                 <strong>{review.rating}점</strong>
                 <span>{review.repurchase_intent ? "재구매 의사 있음" : "재구매 의사 없음"}</span>
-              </div>
-              <p>{review.content}</p>
-              <small>{formatCheckedAt(review.created_at)}</small>
-            </article>
-          ))}
-        </div>
+                <p>{review.content}</p>
+                <small>{formatCheckedAt(review.created_at)}</small>
+              </article>
+            ))}
+          </div>
+        ) : null}
       </section>
     </main>
   );
