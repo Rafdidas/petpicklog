@@ -1,4 +1,5 @@
-import Link from "next/link";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
 
 const guides = [
   { category: "사료", title: "우리 아이에게 맞는 사료 고르는 방법", description: "연령, 체중, 활동량과 원재료를 기준으로 사료를 살펴보는 기본 방법을 정리합니다." },
@@ -19,7 +20,7 @@ export default function GuidePage() {
       <section className="guide-list">
         {guides.map((guide) => (
           <article className="guide-card" key={guide.title}>
-            <span>{guide.category}</span>
+            <Badge variant="category">{guide.category}</Badge>
             <h2>{guide.title}</h2>
             <p>{guide.description}</p>
             <small>콘텐츠 준비 중</small>
@@ -27,8 +28,11 @@ export default function GuidePage() {
         ))}
       </section>
       <section className="guide-cta">
-        <div><p className="section-label">용품 가격 확인</p><h2>가이드에서 살펴본 용품의 가격도 확인해보세요.</h2></div>
-        <Link className="button button--primary" href="/products">가격 확인하기</Link>
+        <div>
+          <p className="guide-cta__label">용품 가격 확인</p>
+          <strong>가이드에서 살펴본 용품의 가격도 확인해보세요.</strong>
+        </div>
+        <Button href="/catalog" variant="green-dark">가격 확인하기</Button>
       </section>
     </main>
   );

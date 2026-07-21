@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import Button from "@/components/ui/Button";
 
 type AuthMode = "login" | "signup";
 
@@ -63,33 +64,50 @@ export default function AuthClient() {
 
   return (
     <main className="auth-page">
-      <section className="auth-panel">
-        <p className="section-label">계정</p>
+      <div className="auth-head">
+        <span className="auth-head__mark" aria-hidden="true">P</span>
         <h1>{mode === "login" ? "로그인" : "회원가입"}</h1>
-        <div className="auth-benefits">
+        <p>로그인 후 관심상품 저장과 가격 변화 알림을 이용할 수 있어요.</p>
+      </div>
+      <section className="auth-card">
+        <div className="auth-card__benefits">
           <strong>로그인 후 이용할 수 있어요.</strong>
-          <span>관심상품 저장</span>
-          <span>저장한 상품 가격 변화 확인</span>
-          <span>상품 후기 작성</span>
+          <span>· 관심상품 저장</span>
+          <span>· 저장한 상품 가격 변화 확인</span>
+          <span>· 상품 후기 작성</span>
         </div>
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <label htmlFor="email">이메일</label>
-          <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          <label htmlFor="password">비밀번호</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            minLength={6}
-            required
-          />
-          <button className="button button--primary" type="submit" disabled={isLoading}>
+        <form className="auth-card__form" onSubmit={handleSubmit}>
+          <label htmlFor="email">
+            이메일
+            <input
+              className="ui-input"
+              id="email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+          </label>
+          <label htmlFor="password">
+            비밀번호
+            <input
+              className="ui-input"
+              id="password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="········"
+              minLength={6}
+              required
+            />
+          </label>
+          <Button type="submit" variant="primary" disabled={isLoading}>
             {isLoading ? "처리 중" : mode === "login" ? "로그인" : "회원가입"}
-          </button>
+          </Button>
         </form>
         {message ? <p className="notice notice--error">{message}</p> : null}
-        <button className="auth-panel__switch" type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")}>
+        <button className="auth-card__switch" type="button" onClick={() => setMode(mode === "login" ? "signup" : "login")}>
           {mode === "login" ? "계정이 없으면 회원가입" : "이미 계정이 있으면 로그인"}
         </button>
       </section>
