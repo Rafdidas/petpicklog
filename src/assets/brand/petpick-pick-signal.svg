@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- 모서리 Radius를 11px 감성으로 수정한 배경 박스 (#c3e17e) -->
+  <rect width="512" height="512" rx="44" ry="44" fill="#c3e17e" />
+
+  <!-- 귀엽게 기울인 발바닥 그룹 (12도 회전) -->
+  <g transform="rotate(12 256 256)" fill="#1c252c">
+    <!-- 발가락 1 (왼쪽) -->
+    <ellipse cx="140" cy="230" rx="38" ry="48" transform="rotate(-20 140 230)" />
+    
+    <!-- 발가락 2 (중앙 왼쪽) -->
+    <ellipse cx="215" cy="155" rx="40" ry="54" transform="rotate(-5 215 155)" />
+    
+    <!-- 발가락 3 (중앙 오른쪽) -->
+    <ellipse cx="305" cy="155" rx="40" ry="54" transform="rotate(5 305 155)" />
+    
+    <!-- 발가락 4 (오른쪽) -->
+    <ellipse cx="380" cy="230" rx="38" ry="48" transform="rotate(20 380 230)" />
+
+    <!-- 메인 발바닥 패드 -->
+    <path d="M 260 230 
+             C 210 230, 160 270, 160 320 
+             C 160 370, 200 400, 260 400 
+             C 320 400, 360 370, 360 320 
+             C 360 270, 310 230, 260 230 Z" />
+
+    <!-- 'Pick' 상징 체크 아이콘 -->
+    <circle cx="315" cy="350" r="32" fill="#c3e17e" />
+    <path d="M 300 350 L 310 360 L 330 338" 
+          stroke="#1c252c" 
+          stroke-width="8" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none" />
+  </g>
+</svg>
