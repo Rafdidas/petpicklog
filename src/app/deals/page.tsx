@@ -1,11 +1,32 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import EmptyState from "@/components/ui/EmptyState";
 import { fetchCatalogPage } from "@/lib/catalog";
+import { getAbsoluteUrl, SITE_NAME } from "@/lib/site";
 import DealsTabsClient from "./deals-tabs-client";
 import DealsListClient from "./deals-list-client";
 import { categories } from "@/lib/categories";
 
 export const revalidate = 3600;
+
+const dealsDescription = "최근 14일 최고가 대비 가격이 내려간 반려용품을 하락폭 순으로 확인하세요.";
+
+export const metadata: Metadata = {
+  title: { absolute: "급락 특가 | 펫픽" },
+  description: dealsDescription,
+  alternates: {
+    canonical: "/deals"
+  },
+  openGraph: {
+    title: "급락 특가 | 펫픽",
+    description: dealsDescription,
+    url: getAbsoluteUrl("/deals"),
+    images: "/opengraph-image",
+    locale: "ko_KR",
+    siteName: SITE_NAME,
+    type: "website"
+  }
+};
 
 export default async function DealsPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const { category } = await searchParams;

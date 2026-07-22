@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import PriceCard from "@/components/PriceCard";
 import CategoryTopProducts from "@/components/CategoryTopProducts";
@@ -9,8 +10,28 @@ import EmptyState from "@/components/ui/EmptyState";
 import { fetchCatalogSummary, fetchCategoryTopDrops, fetchTopDrops } from "@/lib/catalog";
 import { formatCheckedAt } from "@/lib/format";
 import { categories } from "@/lib/categories";
+import { getAbsoluteUrl, SITE_NAME } from "@/lib/site";
 
 export const revalidate = 3600;
+
+const homeDescription = "반려용품의 최근 수집 가격과 가격 추이, 최근 14일 최고가 대비 하락한 급락 특가를 확인하세요.";
+
+export const metadata: Metadata = {
+  title: { absolute: "반려용품 가격 추이와 급락 특가 | 펫픽" },
+  description: homeDescription,
+  alternates: {
+    canonical: "/"
+  },
+  openGraph: {
+    title: "반려용품 가격 추이와 급락 특가 | 펫픽",
+    description: homeDescription,
+    url: getAbsoluteUrl("/"),
+    images: "/opengraph-image",
+    locale: "ko_KR",
+    siteName: SITE_NAME,
+    type: "website"
+  }
+};
 
 export default async function HomePage() {
   const [summary, topDrops, categoryTop] = await Promise.all([
