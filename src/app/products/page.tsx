@@ -1,7 +1,14 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { searchShoppingProducts } from "@/lib/naver-shopping";
 import type { ExternalProduct } from "@/types/product";
 import ProductSearchClient from "./product-search-client";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/products"
+  }
+};
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ query?: string; petType?: string; customPet?: string }> }) {
   const { query, petType, customPet } = await searchParams;

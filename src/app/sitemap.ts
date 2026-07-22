@@ -4,6 +4,8 @@ import { getAbsoluteUrl } from "@/lib/site";
 
 const publicPaths = ["/", "/catalog", "/deals", "/products", "/hospitals", "/guide", "/price-tracking"];
 
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await fetchSitemapProducts();
 

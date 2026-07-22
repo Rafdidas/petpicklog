@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import PriceCard from "@/components/PriceCard";
 import EmptyState from "@/components/ui/EmptyState";
@@ -7,6 +8,12 @@ import CatalogFiltersClient from "./catalog-filters-client";
 import { categories } from "@/lib/categories";
 
 export const revalidate = 3600;
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/catalog"
+  }
+};
 
 const PAGE_SIZE = 24;
 

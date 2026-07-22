@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getAbsoluteUrl, SITE_NAME } from "@/lib/site";
+import { getAbsoluteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: { absolute: "가격 기록 방식 | 펫픽" },
