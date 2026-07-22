@@ -34,6 +34,29 @@ function mapStatsRow(row: StatsRow): ProductPriceStats {
   };
 }
 
+export type SitemapProduct = {
+  externalProductId: string;
+  lastCheckedAt: string;
+};
+
+export async function fetchSitemapProducts(): Promise<SitemapProduct[]> {
+  const supabase = createServerSupabaseClient();
+  if (!supabase) {
+    return [];
+  }
+
+  const { data } = await supabase
+    .from("product_price_stats")
+    .select("external_product_id,last_checked_at")
+    .not("last_checked_at", "is", null)
+    .order("last_checked_at", { ascending: false });
+
+  return ((data ?? []) as { external_product_id: string; last_checked_at: string }[]).map((row) => ({
+    externalProductId: row.external_product_id,
+    lastCheckedAt: row.last_checked_at
+  }));
+}
+
 export async function fetchTopDrops(limit: number): Promise<ProductPriceStats[]> {
   const supabase = createServerSupabaseClient();
   if (!supabase) {

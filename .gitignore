@@ -12,3 +12,6 @@ nul
 
 # Codex isolated worktrees
 .worktrees/
+
+# Subagent progress ledger
+.superpowers/

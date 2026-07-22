@@ -11,6 +11,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import SectionHeading from "@/components/ui/SectionHeading";
 import PriceChart from "./price-chart";
 import SaveButtonClient from "./save-button-client";
+import { getAbsoluteUrl, SITE_NAME } from "@/lib/site";
 
 export const revalidate = 3600;
 
@@ -24,9 +25,24 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     return { title: "상품을 찾을 수 없습니다 | 펫픽" };
   }
 
+  const title = `${stats.title} 최근 수집 가격 ${formatPrice(stats.currentPrice)} | 펫픽`;
+  const description = `${stats.title}의 최근 수집 가격과 가격 추이를 확인하세요.`;
+
   return {
-    title: `${stats.title} 최저가 ${formatPrice(stats.currentPrice)} | 펫픽`,
-    description: `${stats.title}의 최근 가격 추이와 최저가를 확인하세요.`
+    title: { absolute: title },
+    description,
+    alternates: {
+      canonical: `/catalog/${id}`
+    },
+    openGraph: {
+      title,
+      description,
+      url: getAbsoluteUrl(`/catalog/${id}`),
+      images: "/opengraph-image",
+      locale: "ko_KR",
+      siteName: SITE_NAME,
+      type: "website"
+    }
   };
 }
 
@@ -47,6 +63,11 @@ export default async function CatalogDetailPage({ params }: { params: Promise<{ 
     "@type": "Product",
     name: stats.title,
     image: stats.imageUrl ?? undefined,
+    additionalProperty: {
+      "@type": "PropertyValue",
+      name: "마지막 가격 확인 시각",
+      value: stats.lastCheckedAt
+    },
     offers: {
       "@type": "Offer",
       price: stats.currentPrice,

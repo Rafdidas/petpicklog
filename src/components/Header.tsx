@@ -67,7 +67,9 @@ export default function Header() {
     <header className="header">
       <div className="header__inner">
         <Link className="header__logo" href="/">
-          <span className="header__logo-mark" aria-hidden="true">P</span>
+          <span className="header__logo-mark" aria-hidden="true">
+            <img alt="" height={34} src="/icon.svg" width={34} />
+          </span>
           <strong>펫픽</strong>
           <small>반려용품 가격추적</small>
         </Link>

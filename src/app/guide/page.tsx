@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/guide"
+  }
+};
 
 const guides = [
   { category: "사료", title: "우리 아이에게 맞는 사료 고르는 방법", description: "연령, 체중, 활동량과 원재료를 기준으로 사료를 살펴보는 기본 방법을 정리합니다." },

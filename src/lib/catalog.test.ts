@@ -8,7 +8,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: mocks.createServerSupabaseClient
 }));
 
-import { fetchCategoryTopDrops } from "./catalog";
+import { fetchCategoryTopDrops, fetchSitemapProducts } from "./catalog";
 
 const foodRow = {
   external_product_id: "p1",
@@ -68,5 +68,25 @@ describe("fetchCategoryTopDrops", () => {
       dropPct: 17
     });
     expect(result.toy).toEqual([]);
+  });
+});
+
+describe("fetchSitemapProducts", () => {
+  beforeEach(() => {
+    mocks.createServerSupabaseClient.mockReset();
+  });
+
+  it("sitemap 상품의 snake_case 필드를 camelCase로 매핑한다", async () => {
+    const rows = [{ external_product_id: "p1", last_checked_at: "2026-07-22T00:00:00Z" }];
+    const query = {
+      select: () => query,
+      not: () => query,
+      order: () => Promise.resolve({ data: rows })
+    };
+    mocks.createServerSupabaseClient.mockReturnValue({ from: () => query });
+
+    await expect(fetchSitemapProducts()).resolves.toEqual([
+      { externalProductId: "p1", lastCheckedAt: "2026-07-22T00:00:00Z" }
+    ]);
   });
 });
