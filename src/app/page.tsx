@@ -52,7 +52,7 @@ export default async function HomePage() {
           <p>등록된 상품의 가격을 매일 확인해, 최근 14일 최고가 대비 하락한 상품을 모아 보여드려요.</p>
           <form className="home-hero__search" action="/catalog">
             <input className="ui-input" name="query" aria-label="상품 검색어" placeholder="강아지 사료, 고양이 모래, 배변패드 검색" />
-            <Button type="submit" variant="primary">검색하기</Button>
+            <Button type="submit" variant="primary">검색</Button>
           </form>
         </div>
         <aside className="home-hero__panel">
