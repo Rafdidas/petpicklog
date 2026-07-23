@@ -54,7 +54,7 @@ export default async function HomePage() {
             <br />
             매일 기록합니다.
           </Typography>
-          <Typography as="p" type="bodyBold" size="xl" className="home-hero__subtitle">
+          <Typography as="p" type="body" size="xl" className="home-hero__subtitle">
             등록된 상품의 가격을 매일 확인해, 최근 14일 최고가 대비 하락한 상품을 모아
             보여드려요.
           </Typography>
