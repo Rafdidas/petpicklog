@@ -1,6 +1,6 @@
 // src/app/styles/_saved.scss
 .saved-page {
-  max-width: 1000px;
+  max-width: var(--content-sub-max);
   margin: 0 auto;
   padding: 48px 24px 80px;
 }
