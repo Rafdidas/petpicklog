@@ -213,3 +213,54 @@ export async function fetchPriceHistory(externalProductId: string, limit: number
     mallName: row.mall_name
   }));
 }
+
+export type ExternalProductRow = {
+  id: string;
+  source: string;
+  title: string;
+  category: string | null;
+  mall_name: string | null;
+  product_url: string;
+  image_url: string | null;
+  latest_price: number | null;
+  last_synced_at: string | null;
+};
+
+export async function fetchExternalProduct(id: string): Promise<ExternalProductRow | null> {
+  const supabase = createServerSupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data } = await supabase
+    .from("external_products")
+    .select("id, source, title, category, mall_name, product_url, image_url, latest_price, last_synced_at")
+    .eq("id", id)
+    .maybeSingle();
+
+  return (data as ExternalProductRow | null) ?? null;
+}
+
+export type ReviewRow = {
+  id: string;
+  user_id: string;
+  rating: number;
+  repurchase_intent: boolean | null;
+  content: string;
+  created_at: string;
+};
+
+export async function fetchProductReviews(id: string): Promise<ReviewRow[]> {
+  const supabase = createServerSupabaseClient();
+  if (!supabase) {
+    return [];
+  }
+
+  const { data } = await supabase
+    .from("product_reviews")
+    .select("id, user_id, rating, repurchase_intent, content, created_at")
+    .eq("external_product_id", id)
+    .order("created_at", { ascending: false });
+
+  return (data ?? []) as ReviewRow[];
+}

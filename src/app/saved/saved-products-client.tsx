@@ -448,7 +448,7 @@ export default function SavedProductsClient() {
                 <span className="saved-card__source">
                   {product.mall_name ?? "쇼핑몰 확인 필요"} · {getSourceLabel(product.source)}
                 </span>
-                <Link className="saved-card__title" href={`/products/${product.id}`}>
+                <Link className="saved-card__title" href={`/catalog/${product.id}`}>
                   {product.title}
                 </Link>
                 <div className="saved-card__price-row">

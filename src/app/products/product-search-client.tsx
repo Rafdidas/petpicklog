@@ -224,7 +224,7 @@ export default function ProductSearchClient({
 
     try {
       const { externalProductId } = await ensureExternalProduct(product);
-      router.push(`/products/${externalProductId}`);
+      router.push(`/catalog/${externalProductId}`);
     } catch {
       router.push(`/auth?redirect=${encodeURIComponent(`/products?query=${query}`)}`);
     } finally {
