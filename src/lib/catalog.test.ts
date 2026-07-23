@@ -9,6 +9,7 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import { fetchCategoryTopDrops, fetchSitemapProducts } from "./catalog";
+import { categories } from "./categories";
 
 const foodRow = {
   external_product_id: "p1",
@@ -59,7 +60,7 @@ describe("fetchCategoryTopDrops", () => {
 
     const result = await fetchCategoryTopDrops(8);
 
-    expect(Object.keys(result)).toHaveLength(8);
+    expect(Object.keys(result)).toHaveLength(categories.length);
     expect(result.food).toHaveLength(1);
     expect(result.food[0]).toMatchObject({
       externalProductId: "p1",

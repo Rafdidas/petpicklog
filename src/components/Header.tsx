@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import Typography from "@/components/ui/Typography";
 
 export default function Header() {
   const router = useRouter();
@@ -70,8 +71,8 @@ export default function Header() {
           <span className="header__logo-mark" aria-hidden="true">
             <img alt="" height={34} src="/icon.svg" width={34} />
           </span>
-          <strong>펫픽</strong>
-          <small>반려용품 가격추적</small>
+          <Typography as="strong" type="title" size="md">펫픽</Typography>
+          <Typography as="small" type="caption" size="lg">반려용품 가격추적</Typography>
         </Link>
         <button
           className="header__toggle"
@@ -97,13 +98,13 @@ export default function Header() {
               href={item.href}
               key={item.href}
             >
-              {item.label}
+              <Typography type="label" size="sm">{item.label}</Typography>
             </Link>
           ))}
           {isReady && user ? (
-            <button className="header__auth" type="button" onClick={handleSignOut}>로그아웃</button>
+            <button className="header__auth" type="button" onClick={handleSignOut}><Typography type="label" size="sm">로그아웃</Typography></button>
           ) : (
-            <Link className="header__auth" href={loginHref}>로그인</Link>
+            <Link className="header__auth" href={loginHref}><Typography type="label" size="sm">로그인</Typography></Link>
           )}
         </nav>
       </div>

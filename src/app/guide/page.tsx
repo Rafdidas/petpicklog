@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import Typography from "@/components/ui/Typography";
 
 export const metadata: Metadata = {
   alternates: {
@@ -20,24 +21,24 @@ export default function GuidePage() {
   return (
     <main className="guide-page">
       <section className="page-heading">
-        <p className="section-label">반려생활 가이드</p>
-        <h1>반려생활에 필요한 기본 정보를 차근차근 확인하세요.</h1>
-        <p className="page-heading__copy">가이드는 일반적인 정보 제공을 위한 콘텐츠입니다. 건강과 진료에 관한 판단은 수의사와 상담해주세요.</p>
+        <Typography as="p" type="label" size="xs" className="section-label">반려생활 가이드</Typography>
+        <Typography as="h1" type="headline" size="md">반려생활에 필요한 기본 정보를 차근차근 확인하세요.</Typography>
+        <Typography as="p" type="body" size="lg" className="page-heading__copy">가이드는 일반적인 정보 제공을 위한 콘텐츠입니다. 건강과 진료에 관한 판단은 수의사와 상담해주세요.</Typography>
       </section>
       <section className="guide-list">
         {guides.map((guide) => (
           <article className="guide-card" key={guide.title}>
             <Badge variant="category">{guide.category}</Badge>
-            <h2>{guide.title}</h2>
-            <p>{guide.description}</p>
-            <small>콘텐츠 준비 중</small>
+            <Typography as="h2" type="title" size="sm">{guide.title}</Typography>
+            <Typography as="p" type="body" size="sm">{guide.description}</Typography>
+            <Typography as="small" type="caption" size="lg">콘텐츠 준비 중</Typography>
           </article>
         ))}
       </section>
       <section className="guide-cta">
         <div>
-          <p className="guide-cta__label">용품 가격 확인</p>
-          <strong>가이드에서 살펴본 용품의 가격도 확인해보세요.</strong>
+          <Typography as="p" type="label" size="xs" className="guide-cta__label">용품 가격 확인</Typography>
+          <Typography as="strong" type="title" size="sm">가이드에서 살펴본 용품의 가격도 확인해보세요.</Typography>
         </div>
         <Button href="/catalog" variant="green-dark">가격 확인하기</Button>
       </section>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import Typography from "./Typography";
 
 type ButtonVariant = "primary" | "dark" | "outline" | "ghost" | "green-dark" | "danger-text";
 
@@ -21,6 +22,14 @@ function buttonClass({ variant = "primary", size = "md", className }: CommonProp
     .join(" ");
 }
 
+function ButtonContent({ children, size = "md" }: Pick<CommonProps, "children" | "size">) {
+  if (size === "sm") {
+    return <Typography type="label" size="sm">{children}</Typography>;
+  }
+
+  return <Typography type="bodyBold" size="md">{children}</Typography>;
+}
+
 export default function Button(props: ButtonProps) {
   if (props.href !== undefined) {
     const { variant, size, className, external, href, children, ...rest } = props;
@@ -28,13 +37,13 @@ export default function Button(props: ButtonProps) {
     if (external) {
       return (
         <a className={cls} href={href} target="_blank" rel="noreferrer" {...rest}>
-          {children}
+          <ButtonContent size={size}>{children}</ButtonContent>
         </a>
       );
     }
     return (
       <Link className={cls} href={href} {...rest}>
-        {children}
+        <ButtonContent size={size}>{children}</ButtonContent>
       </Link>
     );
   }
@@ -42,7 +51,7 @@ export default function Button(props: ButtonProps) {
   const { variant, size, className, children, type, ...rest } = props;
   return (
     <button className={buttonClass({ variant, size, className, children })} type={type ?? "button"} {...rest}>
-      {children}
+      <ButtonContent size={size}>{children}</ButtonContent>
     </button>
   );
 }

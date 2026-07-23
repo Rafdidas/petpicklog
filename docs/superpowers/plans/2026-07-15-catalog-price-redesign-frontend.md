@@ -878,7 +878,7 @@ export default async function HomePage() {
         <form className="home-hero__search" action="/catalog">
           <span aria-hidden="true">⌕</span>
           <input name="query" aria-label="상품 검색어" placeholder="강아지 사료, 고양이 모래, 배변패드 검색" />
-          <button className="button button--primary" type="submit">검색하기</button>
+          <button className="button button--primary" type="submit">검색</button>
         </form>
       </section>
 

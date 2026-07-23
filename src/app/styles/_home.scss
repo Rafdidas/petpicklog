@@ -10,6 +10,12 @@
   gap: 32px;
   align-items: center;
   padding: 56px 0 40px;
+  &__title {
+    line-height: 1.2 !important;
+  }
+  &__subtitle {
+    padding-top: 10px;
+  }
 
   &__status {
     display: inline-flex;
@@ -19,8 +25,6 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-full);
     padding: 7px 14px;
-    font-size: 12.5px;
-    font-weight: 600;
     color: var(--color-accent-deep);
     margin: 0 0 20px;
 
@@ -32,18 +36,8 @@
     }
   }
 
-  h1 {
-    font-size: 44px;
-    line-height: 1.22;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    margin: 0 0 16px;
-    text-wrap: pretty;
-  }
 
   &__copy > p:not(.home-hero__status) {
-    font-size: 16px;
-    line-height: 1.65;
     color: var(--color-muted);
     margin: 0 0 28px;
     max-width: 440px;
@@ -67,10 +61,7 @@
   }
 
   &__panel-label {
-    font-size: 12.5px;
-    font-weight: 700;
     color: var(--color-muted-4);
-    letter-spacing: 0.04em;
   }
 
   &__stats {

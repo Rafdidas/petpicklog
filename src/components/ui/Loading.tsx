@@ -1,6 +1,7 @@
 "use client";
 
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import Typography from "./Typography";
 
 const LOADING_LOTTIE_SRC = "/petpick_loading.lottie";
 
@@ -27,7 +28,7 @@ export default function Loading({ show = true, size = 160, label }: LoadingProps
       <div className="loading-overlay__anim" style={{ width: size, height: size }}>
         <DotLottieReact src={LOADING_LOTTIE_SRC} loop autoplay />
       </div>
-      {label ? <p className="loading-overlay__label">{label}</p> : null}
+      {label ? <Typography as="p" type="body" size="lg" className="loading-overlay__label">{label}</Typography> : null}
     </div>
   );
 }

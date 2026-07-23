@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getAbsoluteUrl } from "@/lib/site";
+import Typography from "@/components/ui/Typography";
 
 export const metadata: Metadata = {
   title: { absolute: "가격 기록 방식 | 펫픽" },
@@ -57,16 +58,16 @@ export default function PriceTrackingPage() {
   return (
     <main className="price-tracking">
       <section className="price-tracking__intro" aria-labelledby="price-tracking-title">
-        <p className="section-label">가격 추적 기준</p>
-        <h1 id="price-tracking-title">가격 기록 방식을 안내합니다.</h1>
-        <p>펫픽에서 보이는 가격 기록과 하락률이 어떤 기준으로 만들어지는지 확인하세요.</p>
+        <Typography as="p" type="label" size="xs" className="section-label">가격 추적 기준</Typography>
+        <Typography as="h1" type="headline" size="md" id="price-tracking-title">가격 기록 방식을 안내합니다.</Typography>
+        <Typography as="p" type="body" size="lg">펫픽에서 보이는 가격 기록과 하락률이 어떤 기준으로 만들어지는지 확인하세요.</Typography>
       </section>
 
       <div className="price-tracking__facts">
         {trackingFacts.map(({ question, answer }) => (
           <section className="price-tracking__fact" key={question}>
-            <h2>{question}</h2>
-            <p>{answer}</p>
+            <Typography as="h2" type="title" size="md">{question}</Typography>
+            <Typography as="p" type="body" size="lg">{answer}</Typography>
           </section>
         ))}
       </div>

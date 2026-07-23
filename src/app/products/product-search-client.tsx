@@ -13,7 +13,20 @@ import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { ExternalProduct } from "@/types/product";
 
 const getSourceLabel = (source: ExternalProduct["source"]) => (source === "NAVER" ? "네이버 쇼핑 기준" : source);
-const recommendedQueries = ["강아지 사료", "고양이 모래", "배변패드", "강아지 샴푸", "고양이 간식", "영양제"];
+const recommendedQueries = [
+  "강아지 사료",
+  "고양이 모래",
+  "배변패드",
+  "강아지 샴푸",
+  "고양이 간식",
+  "반려동물 영양제",
+  "강아지 장난감",
+  "고양이 장난감",
+  "강아지 하네스",
+  "고양이 이동장",
+  "강아지 미용용품",
+  "반려동물 안전문"
+];
 const petOptions = [
   { value: "all", label: "전체 반려동물" },
   { value: "dog", label: "강아지" },

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
+import Typography from "@/components/ui/Typography";
 import { categories } from "@/lib/categories";
 import { formatPrice } from "@/lib/format";
 import { formatDropLabel } from "@/lib/price-stats";
@@ -25,10 +26,10 @@ export default function PriceCard({ stats }: { stats: ProductPriceStats }) {
         ) : null}
       </div>
       {categoryLabel ? <Badge variant="category">{categoryLabel}</Badge> : null}
-      <span className="price-card__name line-clamp-2">{stats.title}</span>
+      <Typography type="body" size="md" className="price-card__name line-clamp-2">{stats.title}</Typography>
       <div className="price-card__foot">
-        <em className="price-card__price">{formatPrice(stats.currentPrice)}</em>
-        <small className="price-card__meta">{stats.mallName ?? "쇼핑몰 확인 필요"}</small>
+        <Typography as="em" type="title" size="md" className="price-card__price">{formatPrice(stats.currentPrice)}</Typography>
+        <Typography as="small" type="caption" size="lg" className="price-card__meta">{stats.mallName ?? "쇼핑몰 확인 필요"}</Typography>
       </div>
     </Link>
   );

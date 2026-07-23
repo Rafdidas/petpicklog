@@ -1,3 +1,72 @@
+@use "sass:list";
+@use "sass:map";
+
+$styles: (
+  display: (
+    xl: (44px, 700),
+    lg: (30px, 700),
+    md: (26px, 700),
+    sm: (24px, 700),
+    xs: (18px, 700),
+  ),
+  headline: (
+    md: (28px, 700),
+    sm: (21px, 700),
+  ),
+  title: (
+    lg: (20px, 700),
+    md: (18px, 700),
+    sm: (16px, 700),
+    xs: (14px, 700),
+  ),
+  label: (
+    xl: (16px, 500),
+    lg: (15px, 500),
+    md: (14px, 500),
+    sm: (13px, 500),
+    xs: (12px, 500),
+  ),
+  body-bold: (
+    xl: (16px, 700),
+    lg: (15px, 700),
+    md: (14px, 700),
+  ),
+  body: (
+    xl: (16px, 400),
+    lg: (15px, 400),
+    md: (14px, 400),
+    sm: (13px, 400),
+    xs: (12px, 400),
+  ),
+  caption: (
+    lg: (12px, 400),
+    md: (11px, 400),
+    sm: (10px, 400),
+  ),
+);
+
+@mixin style($type, $size) {
+  $values: map.get(map.get($styles, $type), $size);
+
+  font-family: var(--font-sans);
+  font-size: list.nth($values, 1);
+  font-weight: list.nth($values, 2);
+  line-height: 1.5;
+}
+
+.ui-typography {
+  margin: 0;
+  color: inherit;
+}
+
+@each $type, $sizes in $styles {
+  @each $size, $values in $sizes {
+    .ui-typography--#{$type}.ui-typography--#{$size} {
+      @include style($type, $size);
+    }
+  }
+}
+
 .line-clamp {
   display: -webkit-box;
   -webkit-box-orient: vertical;

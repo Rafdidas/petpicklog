@@ -1,3 +1,5 @@
+@use "./typography";
+
 * {
   box-sizing: border-box;
 }
@@ -14,8 +16,7 @@ body {
   background: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.5;
+  @include typography.style(body, lg);
   -webkit-font-smoothing: antialiased;
 }
 
