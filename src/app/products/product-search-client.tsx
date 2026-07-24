@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -56,72 +56,57 @@ export default function ProductSearchClient({
   const [petType, setPetType] = useState(initialPetType);
   const [customPet, setCustomPet] = useState(initialCustomPet);
   const [sort, setSort] = useState(initialSort);
-  const [products, setProducts] = useState<ExternalProduct[]>(initialProducts);
-  const [isLoading, setIsLoading] = useState(false);
   const [savingId, setSavingId] = useState("");
-  const [errorMessage, setErrorMessage] = useState(initialError);
+  const [clientError, setClientError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isPending, startTransition] = useTransition();
 
-  const searchProducts = useCallback(async (nextQuery: string, nextPetType: string, nextCustomPet: string, nextSort: string) => {
+  // 결과는 서버가 URL(searchParams)로 렌더한 initialProducts를 그대로 사용한다.
+  const products = initialProducts;
+  const noResults = Boolean(initialQuery.trim()) && !initialError && products.length === 0;
+  const errorMessage =
+    clientError || initialError || (noResults ? "검색 결과가 없습니다. 다른 검색어로 다시 시도해주세요." : "");
+
+  function runSearch(nextQuery: string, nextPetType: string, nextCustomPet: string, nextSort: string, mode: "push" | "replace") {
     if (!nextQuery.trim()) {
-      setErrorMessage("검색어를 입력해주세요.");
+      setClientError("검색어를 입력해주세요.");
       return;
     }
 
     if (nextPetType === "custom" && !nextCustomPet.trim()) {
-      setErrorMessage("직접입력 반려동물을 입력해주세요. 예: 앵무새, 거북이");
+      setClientError("직접입력 반려동물을 입력해주세요. 예: 앵무새, 거북이");
       return;
     }
 
-    setIsLoading(true);
-    setErrorMessage("");
+    setClientError("");
     setSuccessMessage("");
 
-    try {
-      const params = new URLSearchParams({
-        query: nextQuery,
-        petType: nextPetType,
-        sort: nextSort
-      });
+    const params = new URLSearchParams({
+      query: nextQuery,
+      petType: nextPetType,
+      sort: nextSort
+    });
 
-      if (nextPetType === "custom") {
-        params.set("customPet", nextCustomPet);
-      }
-
-      // Sync the search into the URL so pressing "back" from a detail page
-      // restores the query (the server re-renders results from these params).
-      // Use the native history API to avoid an extra server round-trip here.
-      if (typeof window !== "undefined") {
-        window.history.replaceState(null, "", `/products?${params.toString()}`);
-      }
-
-      const response = await fetch(`/api/products/search?${params.toString()}`);
-      const data = (await response.json()) as { products?: ExternalProduct[]; error?: string };
-
-      if (!response.ok) {
-        throw new Error(data.error ?? "검색에 실패했습니다.");
-      }
-
-      setProducts(data.products ?? []);
-      if (!data.products?.length) {
-        setErrorMessage("검색 결과가 없습니다. 다른 검색어로 다시 시도해주세요.");
-      }
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "검색에 실패했습니다.");
-    } finally {
-      setIsLoading(false);
+    if (nextPetType === "custom") {
+      params.set("customPet", nextCustomPet);
     }
-  }, []);
 
-  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    // 검색을 URL 네비게이션으로 처리해 서버가 결과를 렌더하게 한다.
+    // 이래야 상세 페이지에서 뒤로가기 했을 때 검색 상태가 그대로 복원된다.
+    startTransition(() => {
+      router[mode](`/products?${params.toString()}`, { scroll: mode === "push" });
+    });
+  }
+
+  function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    searchProducts(query, petType, customPet, sort);
+    runSearch(query, petType, customPet, sort, "push");
   }
 
   function handleSortChange(nextSort: string) {
     setSort(nextSort);
     if (query.trim()) {
-      searchProducts(query, petType, customPet, nextSort);
+      runSearch(query, petType, customPet, nextSort, "replace");
     }
   }
 
@@ -175,13 +160,13 @@ export default function ProductSearchClient({
   }
 
   async function handleSave(product: ExternalProduct) {
-    setErrorMessage("");
+    setClientError("");
     setSuccessMessage("");
     setSavingId(product.externalId);
 
     const supabase = createBrowserSupabaseClient();
     if (!supabase) {
-      setErrorMessage("Supabase 환경 변수를 확인해주세요.");
+      setClientError("Supabase 환경 변수를 확인해주세요.");
       setSavingId("");
       return;
     }
@@ -200,7 +185,7 @@ export default function ProductSearchClient({
     try {
       ({ externalProductId } = await ensureExternalProduct(product));
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "상품 정보를 저장하지 못했습니다.");
+      setClientError(error instanceof Error ? error.message : "상품 정보를 저장하지 못했습니다.");
       setSavingId("");
       return;
     }
@@ -213,7 +198,7 @@ export default function ProductSearchClient({
       .maybeSingle();
 
     if (existingSaveError) {
-      setErrorMessage(existingSaveError.message);
+      setClientError(existingSaveError.message);
       setSavingId("");
       return;
     }
@@ -232,7 +217,7 @@ export default function ProductSearchClient({
     });
 
     if (saveError) {
-      setErrorMessage(saveError.message);
+      setClientError(saveError.message);
       setSavingId("");
       return;
     }
@@ -251,7 +236,7 @@ export default function ProductSearchClient({
   }
 
   async function handleOpenDetail(product: ExternalProduct) {
-    setErrorMessage("");
+    setClientError("");
     setSuccessMessage("");
     setSavingId(product.externalId);
 
@@ -283,8 +268,8 @@ export default function ProductSearchClient({
             placeholder="사료, 간식, 배변패드"
             aria-label="검색어"
           />
-          <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? "검색 중" : "검색"}
+          <Button type="submit" variant="primary" disabled={isPending}>
+            {isPending ? "검색 중" : "검색"}
           </Button>
         </form>
         <div className="search-card__pets">
@@ -317,7 +302,7 @@ export default function ProductSearchClient({
               key={item}
               onClick={() => {
                 setQuery(item);
-                searchProducts(item, petType, customPet, sort);
+                runSearch(item, petType, customPet, sort, "push");
               }}
             >
               {item}
