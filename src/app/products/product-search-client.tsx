@@ -4,15 +4,17 @@ import { FormEvent, useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import EmptyState from "@/components/ui/EmptyState";
-import { formatCheckedAt, formatPrice } from "@/lib/format";
+import SortDropdown from "@/components/ui/SortDropdown";
+import { formatPrice } from "@/lib/format";
 import { buildPetShoppingQuery } from "@/lib/pet-search";
+import { searchSortOptions } from "@/lib/sort-options";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import type { ExternalProduct } from "@/types/product";
 
-const getSourceLabel = (source: ExternalProduct["source"]) => (source === "NAVER" ? "네이버 쇼핑 기준" : source);
 const recommendedQueries = [
   "강아지 사료",
   "고양이 모래",
@@ -39,25 +41,28 @@ export default function ProductSearchClient({
   initialError,
   initialPetType,
   initialProducts,
-  initialQuery
+  initialQuery,
+  initialSort
 }: {
   initialCustomPet: string;
   initialError: string;
   initialPetType: string;
   initialProducts: ExternalProduct[];
   initialQuery: string;
+  initialSort: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
   const [petType, setPetType] = useState(initialPetType);
   const [customPet, setCustomPet] = useState(initialCustomPet);
+  const [sort, setSort] = useState(initialSort);
   const [products, setProducts] = useState<ExternalProduct[]>(initialProducts);
   const [isLoading, setIsLoading] = useState(false);
   const [savingId, setSavingId] = useState("");
   const [errorMessage, setErrorMessage] = useState(initialError);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const searchProducts = useCallback(async (nextQuery: string, nextPetType: string, nextCustomPet: string) => {
+  const searchProducts = useCallback(async (nextQuery: string, nextPetType: string, nextCustomPet: string, nextSort: string) => {
     if (!nextQuery.trim()) {
       setErrorMessage("검색어를 입력해주세요.");
       return;
@@ -75,11 +80,19 @@ export default function ProductSearchClient({
     try {
       const params = new URLSearchParams({
         query: nextQuery,
-        petType: nextPetType
+        petType: nextPetType,
+        sort: nextSort
       });
 
       if (nextPetType === "custom") {
         params.set("customPet", nextCustomPet);
+      }
+
+      // Sync the search into the URL so pressing "back" from a detail page
+      // restores the query (the server re-renders results from these params).
+      // Use the native history API to avoid an extra server round-trip here.
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", `/products?${params.toString()}`);
       }
 
       const response = await fetch(`/api/products/search?${params.toString()}`);
@@ -102,7 +115,14 @@ export default function ProductSearchClient({
 
   async function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    searchProducts(query, petType, customPet);
+    searchProducts(query, petType, customPet, sort);
+  }
+
+  function handleSortChange(nextSort: string) {
+    setSort(nextSort);
+    if (query.trim()) {
+      searchProducts(query, petType, customPet, nextSort);
+    }
   }
 
   async function ensureExternalProduct(product: ExternalProduct) {
@@ -297,7 +317,7 @@ export default function ProductSearchClient({
               key={item}
               onClick={() => {
                 setQuery(item);
-                searchProducts(item, petType, customPet);
+                searchProducts(item, petType, customPet, sort);
               }}
             >
               {item}
@@ -312,33 +332,42 @@ export default function ProductSearchClient({
         <EmptyState title="검색어를 입력해 보세요">반려동물 용품의 실시간 가격을 확인해드려요.</EmptyState>
       ) : null}
 
-      <section className="product-grid" aria-live="polite">
-        {products.map((product) => (
-          <article className="product-card" key={`${product.source}-${product.externalId}`}>
-            <Image src={product.imageUrl} alt="" width={600} height={450} />
-            <div className="product-card--meta">
-              <span>{product.mallName}</span>
-              <em>{getSourceLabel(product.source)}</em>
-            </div>
-            <h2>{product.title}</h2>
-            <div className="product-card--body">
-              <p>{formatPrice(product.latestPrice)}</p>
-              <small>{product.category || "카테고리 확인 필요"}</small>
-              <small>마지막 확인: {formatCheckedAt(product.lastSyncedAt)}</small>
-            </div>
-            <div className="product-card--actions">
-              <Button variant="outline" size="sm" onClick={() => handleSave(product)} disabled={savingId === product.externalId}>
-                {savingId === product.externalId ? "저장 중" : "관심상품 저장"}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => handleOpenDetail(product)} disabled={savingId === product.externalId}>
-                상세 보기
-              </Button>
-              <Button variant="primary" size="sm" href={product.productUrl} external>
-                구매하러 가기
-              </Button>
-            </div>
-          </article>
-        ))}
+      {products.length ? (
+        <div className="list-toolbar">
+          <p className="result-summary">총 {products.length}개</p>
+          <SortDropdown options={searchSortOptions} value={sort} onChange={handleSortChange} />
+        </div>
+      ) : null}
+
+      <section className="card-grid" aria-live="polite">
+        {products.map((product) => {
+          const categoryLeaf = product.category?.split(">").pop()?.trim();
+          const busy = savingId === product.externalId;
+
+          return (
+            <article className="price-card price-card--search" key={`${product.source}-${product.externalId}`}>
+              <button type="button" className="price-card__link" onClick={() => handleOpenDetail(product)} disabled={busy}>
+                <span className="price-card__media">
+                  <Image src={product.imageUrl} alt="" width={240} height={180} />
+                </span>
+                {categoryLeaf ? <Badge variant="category">{categoryLeaf}</Badge> : null}
+                <span className="price-card__name line-clamp-2">{product.title}</span>
+                <span className="price-card__foot">
+                  <em className="price-card__price">{formatPrice(product.latestPrice)}</em>
+                  <small className="price-card__meta">{product.mallName}</small>
+                </span>
+              </button>
+              <div className="price-card__actions">
+                <Button variant="outline" size="sm" onClick={() => handleSave(product)} disabled={busy}>
+                  {busy ? "처리 중" : "관심상품"}
+                </Button>
+                <Button variant="primary" size="sm" href={product.productUrl} external>
+                  사러가기
+                </Button>
+              </div>
+            </article>
+          );
+        })}
       </section>
     </main>
   );

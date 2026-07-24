@@ -58,7 +58,7 @@ export default function Header() {
   const navItems = [
     { href: "/catalog", label: "카탈로그" },
     { href: "/deals", label: "급락 특가" },
-    { href: "/products", label: "실시간 검색" },
+    { href: "/products", label: "검색" },
     { href: "/hospitals", label: "동물병원" },
     { href: "/guide", label: "가이드" },
     { href: "/saved", label: "관심상품" }

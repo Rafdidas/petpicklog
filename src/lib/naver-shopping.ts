@@ -21,10 +21,18 @@ type NaverShoppingResponse = {
 
 const stripHtml = (value: string) => value.replace(/<[^>]*>/g, "").replace(/&quot;/g, '"').trim();
 
-export async function searchShoppingProducts(query: string, options: PetSearchTarget = {}): Promise<ExternalProduct[]> {
+// 네이버 쇼핑 API가 허용하는 정렬값: sim(유사도) · date(날짜) · asc(가격↑) · dsc(가격↓)
+const allowedSorts = new Set(["sim", "date", "asc", "dsc"]);
+const normalizeSort = (value?: string) => (value && allowedSorts.has(value) ? value : "sim");
+
+export async function searchShoppingProducts(
+  query: string,
+  options: PetSearchTarget & { sort?: string } = {}
+): Promise<ExternalProduct[]> {
   const clientId = process.env.NAVER_SHOPPING_CLIENT_ID;
   const clientSecret = process.env.NAVER_SHOPPING_CLIENT_SECRET;
   const shoppingQuery = buildPetShoppingQuery(query, options);
+  const sort = normalizeSort(options.sort);
 
   if (!shoppingQuery) {
     return [];
@@ -35,7 +43,7 @@ export async function searchShoppingProducts(query: string, options: PetSearchTa
   }
 
   const response = await fetch(
-    `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(shoppingQuery)}&display=20&sort=sim`,
+    `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(shoppingQuery)}&display=20&sort=${sort}`,
     {
       headers: {
         "X-Naver-Client-Id": clientId,

@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import EmptyState from "@/components/ui/EmptyState";
-import { fetchCatalogPage } from "@/lib/catalog";
+import UrlSortDropdown from "@/components/ui/UrlSortDropdown";
+import { fetchCatalogPage, type CatalogSort } from "@/lib/catalog";
+import { catalogSortOptions } from "@/lib/sort-options";
 import { getAbsoluteUrl, SITE_NAME } from "@/lib/site";
 import DealsTabsClient from "./deals-tabs-client";
 import DealsListClient from "./deals-list-client";
@@ -28,13 +30,17 @@ export const metadata: Metadata = {
   }
 };
 
-export default async function DealsPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
-  const { category } = await searchParams;
+function toSort(value: string | undefined): CatalogSort {
+  return value === "price" || value === "price_desc" || value === "recent" ? value : "drop";
+}
+
+export default async function DealsPage({ searchParams }: { searchParams: Promise<{ category?: string; sort?: string }> }) {
+  const { category, sort } = await searchParams;
 
   const { items, total } = await fetchCatalogPage({
     categorySlug: category,
     minDropPct: 1,
-    sort: "drop",
+    sort: toSort(sort),
     page: 1,
     pageSize: 60
   });
@@ -51,7 +57,12 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
         <DealsTabsClient categories={categories} />
       </Suspense>
 
-      <p className="result-summary">총 {total.toLocaleString("ko-KR")}개 · 하락률순</p>
+      <div className="list-toolbar">
+        <p className="result-summary">총 {total.toLocaleString("ko-KR")}개</p>
+        <Suspense>
+          <UrlSortDropdown options={catalogSortOptions} defaultValue="drop" />
+        </Suspense>
+      </div>
 
       {items.length ? (
         <DealsListClient items={items} />

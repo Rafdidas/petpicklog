@@ -58,7 +58,7 @@ export default async function HomePage() {
             등록된 상품의 가격을 매일 확인해, 최근 14일 최고가 대비 하락한 상품을 모아
             보여드려요.
           </Typography>
-          <form className="home-hero__search" action="/catalog">
+          <form className="home-hero__search" action="/products">
             <input
               className="ui-input"
               name="query"

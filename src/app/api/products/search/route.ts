@@ -7,9 +7,10 @@ export async function GET(request: Request) {
   const petType = searchParams.get("petType") ?? "all";
   const customPet = searchParams.get("customPet") ?? "";
   const scoped = searchParams.get("scope") !== "raw";
+  const sort = searchParams.get("sort") ?? "sim";
 
   try {
-    const products = await searchShoppingProducts(query, { petType, customPet, scoped });
+    const products = await searchShoppingProducts(query, { petType, customPet, scoped, sort });
     return NextResponse.json({ products });
   } catch (error) {
     const message = error instanceof Error ? error.message : "상품 검색에 실패했습니다.";

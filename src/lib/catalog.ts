@@ -122,7 +122,7 @@ export async function fetchCatalogSummary(): Promise<CatalogSummary> {
   };
 }
 
-export type CatalogSort = "drop" | "price" | "recent";
+export type CatalogSort = "drop" | "price" | "price_desc" | "recent";
 
 export type CatalogFilters = {
   query?: string;
@@ -166,6 +166,8 @@ export async function fetchCatalogPage(filters: CatalogFilters): Promise<{ items
 
   if (filters.sort === "price") {
     query = query.order("current_price", { ascending: true });
+  } else if (filters.sort === "price_desc") {
+    query = query.order("current_price", { ascending: false });
   } else if (filters.sort === "recent") {
     query = query.order("last_checked_at", { ascending: false });
   } else {

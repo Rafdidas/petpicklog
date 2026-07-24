@@ -10,17 +10,18 @@ export const metadata: Metadata = {
   }
 };
 
-export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ query?: string; petType?: string; customPet?: string }> }) {
-  const { query, petType, customPet } = await searchParams;
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ query?: string; petType?: string; customPet?: string; sort?: string }> }) {
+  const { query, petType, customPet, sort } = await searchParams;
   const initialQuery = query || "";
   const initialPetType = petType || "all";
   const initialCustomPet = customPet || "";
+  const initialSort = sort || "sim";
   let initialProducts: ExternalProduct[] = [];
   let initialError = "";
 
   if (initialQuery.trim()) {
     try {
-      initialProducts = await searchShoppingProducts(initialQuery, { petType: initialPetType, customPet: initialCustomPet });
+      initialProducts = await searchShoppingProducts(initialQuery, { petType: initialPetType, customPet: initialCustomPet, sort: initialSort });
     } catch (error) {
       initialError = error instanceof Error ? error.message : "상품 검색에 실패했습니다.";
     }
@@ -34,6 +35,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         initialPetType={initialPetType}
         initialProducts={initialProducts}
         initialQuery={initialQuery}
+        initialSort={initialSort}
       />
     </Suspense>
   );

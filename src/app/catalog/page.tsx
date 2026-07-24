@@ -5,6 +5,8 @@ import PriceCard from "@/components/PriceCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { fetchCatalogPage, type CatalogSort } from "@/lib/catalog";
 import CatalogFiltersClient from "./catalog-filters-client";
+import UrlSortDropdown from "@/components/ui/UrlSortDropdown";
+import { catalogSortOptions } from "@/lib/sort-options";
 import { categories } from "@/lib/categories";
 
 export const revalidate = 3600;
@@ -27,7 +29,7 @@ type CatalogSearchParams = {
 };
 
 function toSort(value: string | undefined): CatalogSort {
-  return value === "price" || value === "recent" ? value : "drop";
+  return value === "price" || value === "price_desc" || value === "recent" ? value : "drop";
 }
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<CatalogSearchParams> }) {
@@ -60,7 +62,12 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
         <CatalogFiltersClient categories={categories} />
       </Suspense>
 
-      <p className="result-summary">총 {total.toLocaleString("ko-KR")}개 상품 · {page} / {totalPages} 페이지</p>
+      <div className="list-toolbar">
+        <p className="result-summary">총 {total.toLocaleString("ko-KR")}개 상품 · {page} / {totalPages} 페이지</p>
+        <Suspense>
+          <UrlSortDropdown options={catalogSortOptions} defaultValue="drop" />
+        </Suspense>
+      </div>
 
       {items.length ? (
         <section className="card-grid">

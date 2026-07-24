@@ -12,12 +12,6 @@ const petOptions = [
   { value: "cat", label: "고양이" }
 ];
 
-const sortOptions = [
-  { value: "drop", label: "하락률순" },
-  { value: "price", label: "낮은가격순" },
-  { value: "recent", label: "최신순" }
-];
-
 const maxPriceOptions = [
   { value: "", label: "전체 가격대" },
   { value: "10000", label: "1만원 이하" },
@@ -31,7 +25,6 @@ export default function CatalogFiltersClient({ categories }: { categories: Categ
   const searchParams = useSearchParams();
   const currentCategory = searchParams.get("category") ?? "";
   const currentPet = searchParams.get("pet") ?? "";
-  const currentSort = searchParams.get("sort") ?? "drop";
   const currentMaxPrice = searchParams.get("maxPrice") ?? "";
   const [queryInput, setQueryInput] = useState(searchParams.get("query") ?? "");
 
@@ -84,14 +77,6 @@ export default function CatalogFiltersClient({ categories }: { categories: Categ
           반려동물
           <select className="ui-input" value={currentPet} onChange={(event) => updateParam("pet", event.target.value)}>
             {petOptions.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </label>
-        <label className="filter-card__field">
-          정렬
-          <select className="ui-input" value={currentSort} onChange={(event) => updateParam("sort", event.target.value)}>
-            {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>{option.label}</option>
             ))}
           </select>
