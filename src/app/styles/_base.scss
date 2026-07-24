@@ -13,11 +13,36 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: var(--color-canvas);
+  background-color: var(--color-canvas);
+  background-image:
+    url("/images/petpick-pets-line-art-down-faded-static.png"),
+    url("/images/petpick-pets-line-art-faded-static.png");
+  background-position:
+    -106px 96px,
+    calc(100% + 52px) calc(100% - 44px);
+  background-repeat: no-repeat;
+  background-size:
+    min(29vw, 390px) auto,
+    min(30vw, 390px) auto;
   color: var(--color-ink);
   font-family: var(--font-sans);
   @include typography.style(body, lg);
   -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 1100px) {
+  body {
+    background-position:
+      -84px 96px,
+      calc(100% + 42px) calc(100% - 44px);
+    background-size: 320px auto, 320px auto;
+  }
+}
+
+@media (max-width: 720px) {
+  body {
+    background-image: none;
+  }
 }
 
 a {
