@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import EmptyState from "@/components/ui/EmptyState";
+import Pagination from "@/components/ui/Pagination";
 import SortDropdown from "@/components/ui/SortDropdown";
 import { formatPrice } from "@/lib/format";
 import { buildPetShoppingQuery } from "@/lib/pet-search";
@@ -35,6 +36,7 @@ const petOptions = [
   { value: "cat", label: "고양이" },
   { value: "custom", label: "직접입력" }
 ];
+const PAGE_SIZE = 20;
 
 export default function ProductSearchClient({
   initialCustomPet,
@@ -66,6 +68,25 @@ export default function ProductSearchClient({
   const noResults = Boolean(initialQuery.trim()) && !initialError && products.length === 0;
   const errorMessage =
     clientError || initialError || (noResults ? "검색 결과가 없습니다. 다른 검색어로 다시 시도해주세요." : "");
+
+  // 한 번에 받은 결과를 화면에서는 페이지 단위로 나눠 보여준다(추가 API 호출 없음).
+  const [page, setPage] = useState(1);
+  const [prevProducts, setPrevProducts] = useState(products);
+  const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const visibleProducts = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // 검색 결과가 바뀌면(검색어/정렬 변경) 첫 페이지로 되돌린다.
+  if (prevProducts !== products) {
+    setPrevProducts(products);
+    setPage(1);
+  }
+
+  function goToPage(next: number) {
+    setPage(next);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
 
   function runSearch(nextQuery: string, nextPetType: string, nextCustomPet: string, nextSort: string, mode: "push" | "replace") {
     if (!nextQuery.trim()) {
@@ -319,13 +340,13 @@ export default function ProductSearchClient({
 
       {products.length ? (
         <div className="list-toolbar">
-          <p className="result-summary">총 {products.length}개</p>
+          <p className="result-summary">총 {products.length}개 · {page} / {totalPages} 페이지</p>
           <SortDropdown options={searchSortOptions} value={sort} onChange={handleSortChange} />
         </div>
       ) : null}
 
       <section className="card-grid" aria-live="polite">
-        {products.map((product) => {
+        {visibleProducts.map((product) => {
           const categoryLeaf = product.category?.split(">").pop()?.trim();
           const busy = savingId === product.externalId;
 
@@ -354,6 +375,8 @@ export default function ProductSearchClient({
           );
         })}
       </section>
+
+      {products.length ? <Pagination page={page} totalPages={totalPages} onChange={goToPage} /> : null}
     </main>
   );
 }

@@ -43,7 +43,7 @@ export async function searchShoppingProducts(
   }
 
   const response = await fetch(
-    `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(shoppingQuery)}&display=20&sort=${sort}`,
+    `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(shoppingQuery)}&display=100&sort=${sort}`,
     {
       headers: {
         "X-Naver-Client-Id": clientId,
