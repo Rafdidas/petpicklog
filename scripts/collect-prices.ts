@@ -104,7 +104,19 @@ async function main() {
   console.log(`발굴 ${discovered}건 / 스냅샷 ${refreshed}건 / 매칭 실패 ${failedMatch}건`);
 }
 
+// fetch 실패는 `fetch failed`로만 표기되고 실제 원인(ENOTFOUND·ETIMEDOUT 등)은 cause에 담긴다.
+function formatError(error: unknown) {
+  const lines: string[] = [];
+
+  for (let current = error, depth = 0; current instanceof Error; current = current.cause, depth += 1) {
+    const code = (current as NodeJS.ErrnoException).code;
+    lines.push(`${"  ".repeat(depth)}${current.name}: ${current.message}${code ? ` [code=${code}]` : ""}`);
+  }
+
+  return lines.length ? lines.join("\n") : String(error);
+}
+
 main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
+  console.error(formatError(error));
   process.exit(1);
 });
